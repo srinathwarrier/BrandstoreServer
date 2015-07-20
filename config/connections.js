@@ -50,9 +50,9 @@ module.exports.connections = {
 
   brandstoremysql: {
     adapter: 'sails-mysql',
-    host:     process.env.HOST   || 'localhost',
-    user:     process.env.OPENSHIFT_MYSQL_DB_USERNAME || 'root',
-    password: process.env.OPENSHIFT_MYSQL_DB_PASSWORD || 'gandhiwarrier1',
+    host:     process.env.BRANDSTORE_MYSQL_HOST   || 'localhost',
+    user:     process.env.BRANDSTORE_MYSQL_USERNAME || 'root',
+    password: process.env.BRANDSTORE_MYSQL_PASSWORD || '',
     database: 'brandstore'
   },
 
