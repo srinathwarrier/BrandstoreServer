@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../partials/head %>
+  <% include ../partials/brandupdatelogic %>
+  <script type="text/javascript">
+    function onBrandChanged(e) {
+      var a = (e.options[e.selectedIndex].text);
+
+    }
+
+
+  </script>
+</head>
+<body class="container">
+
+<header>
+  <% include ../partials/header %>
+</header>
+
+<main>
+  <div class="jumbotron">
+    <h1><%= title %></h1>
+
+
+    <form action="/brandupdate" class="form-group" method="POST">
+
+
+      <h2> Brand : </h2>
+
+
+      <div id="outerDivBrand">
+
+        <div class="row">
+          <div class="col-md-6 pull-left lead">
+            Brand ID
+          </div>
+          <div class="col-md-6 pull-right lead">
+            <input type="text" disabled="disabled" name="brandID" class="form-control" value="<%= brand.brandID %>">
+            <input type="hidden" name="brandID" value="<%= brand.brandID %>">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 pull-left lead">
+            Brand Name
+          </div>
+          <div class="col-md-6 pull-right">
+            <input type="text" name="brandName" class="form-control" value="<%= brand.brandName %>">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 pull-left lead">
+            ImageUrl
+          </div>
+          <div class="col-md-6 pull-right">
+            <input type="text" name="imageUrl" class="form-control" value="<%= brand.imageUrl %>">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 pull-left lead">
+            Description
+          </div>
+          <div class="col-md-6 pull-right">
+            <textarea class="form-control" type="text" name="description"><%= brand.description %></textarea>
+          </div>
+        </div>
+
+        <br/>
+
+        <div class="row">
+          <div class="col-md-6 pull-left lead">
+            Website
+          </div>
+          <div class="col-md-6 pull-right">
+            <input type="text" name="website" class="form-control" value="<%= brand.website %>">
+          </div>
+        </div>
+      </div>
+
+      <br/>
+      <br/>
+      <br/>
+
+
+      <h2> Outlet : </h2>
+
+      <div id="outerDivOutlet">
+        <% for(var outletIndex=0;outletIndex<brand.outlets.length;outletIndex++) { %>
+
+        <div class="row">
+          <div class="col-md-6 pull-left lead">
+            Outlet Index :
+          </div>
+          <div class="col-md-6 pull-right">
+            <input type="text" disabled="disabled" name="outletIndex" value="<%= outletIndex%>">
+            <input type="hidden" name="outletIndex" value="<%= outletIndex %>">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 pull-left lead">
+            Outlet ID
+          </div>
+          <div class="col-md-6 pull-right lead">
+            <input type="text" disabled="disabled" name="outletID" class="form-control" value="<%= brand.outlets[outletIndex].outletID %>">
+            <input type="hidden" name="outletID" value="<%= brand.outlets[outletIndex].outletID %>">
+          </div>
+        </div>
+
+
+
+        <div class="row">
+          <div class="col-md-6 pull-left lead">
+            Floor Number
+          </div>
+          <div class="col-md-6 pull-right">
+            <select name="floorNumber" id="floorNumberSelect">
+              <% var arr = [-1, 0, 1, 2]; for(var i in arr){ %>
+              <option value="<%= arr[i] %>"> <%= arr[i] %> </option>
+              <% }; %>
+            </select>
+
+            <script>
+              document.getElementById('floorNumberSelect').selectedIndex = "<%= arr.indexOf(brand.outlets[outletIndex].floorNumber) %>";
+            </script>
+
+          </div>
+        </div>
+
+
+        <div class="row">
+          <div class="col-md-6 pull-left lead">
+            Floor Zone
+          </div>
+          <div class="col-md-6 pull-right">
+            <select name="floorZoneID" id="floorZoneSelect">
+              <%
+              var obj = {
+                "1": "SW",
+                "2": "NW",
+                "3": "NE",
+                "4": "SE"
+              };
+              %>
+              <% for(var i in obj){ %>
+              <option value="<%= i %>"> <%= obj[i] %> </option>
+              <% }; %>
+            </select>
+
+            <script>
+              document.getElementById('floorZoneSelect').selectedIndex = "<%= (brand.outlets[outletIndex].floorZoneID) -1 %>";
+            </script>
+
+          </div>
+        </div>
+
+
+          <div class="row">
+            <div class="col-md-6 pull-left lead">
+              Phone Number
+            </div>
+            <div class="col-md-6 pull-right">
+              <input type="text" name="phoneNumber" class="form-control" value="<%=brand.outlets[outletIndex].phoneNumber %>">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 pull-left lead">
+              Email
+            </div>
+            <div class="col-md-6 pull-right">
+              <input type="text" name="emailId" class="form-control" value="<%= brand.outlets[outletIndex].emailId %>">
+            </div>
+          </div>
+
+
+
+        <br />
+        <br />
+        <br />
+
+        <h2> Offers : </h2>
+
+        <input id="offer_count" type="hidden" name="offers_count" value="<%= offers.length %>" />
+        <div id="offerDivOutlet">
+
+          <% for(var offerIndex=0;offerIndex <offers.length ; offerIndex ++) { %>
+          <% console.log('offerIndex:'+offerIndex+' and Offers table : '+JSON.stringify( offers[offerIndex] ));  %>
+
+          <div class="row">
+
+            <input type="hidden" name="offer_<%=offerIndex%>_id" value="<%= offers[offerIndex].offerID %>"/>
+
+            <div class="col-md-6 pull-left left">
+              <input type="text" name="offer_<%=offerIndex%>_desc" class="form-control" value="<%= offers[offerIndex].offerDesc  %>">
+            </div>
+
+            <div class="col-md-6 pull-right">
+              <select name="offer_<%=offerIndex%>_active" id="offer_<%=offerIndex%>_activeSelect">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+              <% console.log('offers[offerIndex].active boolean: '+offers[offerIndex].active ); %>
+              <% console.log('offers[offerIndex].active : '+ (offers[offerIndex].active?1:0) ); %>
+              <script>
+                document.getElementById('offer_<%=offerIndex%>_activeSelect').selectedIndex = "<%= (offers[offerIndex].active?1:0) %>";
+              </script>
+
+            </div>
+          </div>
+
+          <% } %>
+
+
+          <div id="offerDivOutletNew"></div>
+
+          </div>
+
+        <input type="button" class="form-control" value="Add Offer" onclick="onAddOfferClicked(this);">
+
+        <br />
+        <br />
+        <br />
+
+        <% } %>
+
+
+        </div>
+
+        <br/>
+        <input type="submit" class="form-control" value="Submit">
+
+    </form>
+
+
+    <!--
+        Brand :
+        Name
+        ImageUrl
+        Desc
+        Website
+
+        BrandType :
+        ID
+
+        Outlet []:
+        [
+          floorNumber ,
+          floorZoneID,
+          phoneNumber ,
+          emailID
+        ]
+
+
+    -->
+
+  </div>
+</main>
+
+<footer>
+  <% include ../partials/footer %>
+</footer>
+
+</body>
+</html>

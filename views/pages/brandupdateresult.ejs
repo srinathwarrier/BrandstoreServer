@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../partials/head %>
+  <% include ../partials/brandupdatelogic.ejs %>
+  <script type="text/javascript">
+    function onBrandChanged(e) {
+      var a = (e.options[e.selectedIndex].text);
+
+    }
+
+
+  </script>
+</head>
+<body class="container">
+
+<header>
+  <% include ../partials/header %>
+</header>
+
+<main>
+  <div class="jumbotron">
+    <h1><%= title %></h1>
+
+
+  </div>
+</main>
+
+<footer>
+  <% include ../partials/footer %>
+</footer>
+
+</body>
+</html>

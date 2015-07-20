@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../partials/head %>
+
+  <script type="text/javascript">
+
+    function onBrandChanged(e){
+      var brandId = (e.options[e.selectedIndex].value);
+
+      window.location = "/brandupdate/"+brandId;
+    }
+
+  </script>
+</head>
+<body class="container">
+
+<header>
+  <% include ../partials/header %>
+</header>
+
+<main>
+  <div class="jumbotron">
+    <h1><%= title %></h1>
+
+    <select onchange="onBrandChanged(this);">
+      <% for(var i in brandArray){ %>
+      <option value="<%= brandArray[i].brandID%>"> <%= brandArray[i].brandName%> </option>
+      <% }; %>
+    </select>
+
+
+  </div>
+</main>
+
+<footer>
+  <% include ../partials/footer %>
+</footer>
+
+</body>
+</html>

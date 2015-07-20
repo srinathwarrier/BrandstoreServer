@@ -1,0 +1,67 @@
+<script type="text/javascript">
+
+  //offerCounter=0;
+  var xmlhttp;
+  function loadXMLData(url,cfunc)
+  {
+      if (window.XMLHttpRequest)
+      {// code for IE7+, Firefox, Chrome, Opera, Safari
+      xmlhttp=new XMLHttpRequest();
+      }
+      else
+      {// code for IE6, IE5
+      xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+      }
+      xmlhttp.onreadystatechange=cfunc;
+      xmlhttp.open("GET",url,true);
+      xmlhttp.send();
+  }
+
+  function getBrandDetailsObject(id){
+      loadXMLData("http://localhost:8070/getbranddetailsforid?id="+id,function(){
+        if(xmlhttp.readyState==4 && xmlhttp.status==200)
+        {
+          var brandObject =JSON.parse(xmlhttp.responseText) ;
+          console.log('floor:'+brandObject[0].floorNumber);
+
+          var divElement = document.getElementById("updateForm");
+          var str="";
+          str+= '<form action="http://localhost:8070/postupdatebrandquery" method="POST">';
+          for(var i in brandObject[0])
+          {
+            str += '<p>'+i+'</p>'
+            str += '<input type="text" name="'+i+'" value="'+brandObject[0][i]+'">';
+          }
+          str += '<input type="submit" value="Submit"> </form>';
+          divElement.innerHTML = str;
+        }
+      });
+  }
+
+  function onAddOfferClicked(e){
+    // change offer_count value
+    var offerCountElement  = document.getElementById("offer_count");
+    var offerCountElementValue = offerCountElement.value;
+    offerCountElementValue++;
+    offerCountElement.value = offerCountElementValue;
+
+    // calculate offerIndex
+    var offerIndex = offerCountElementValue-1;
+
+    // add new element
+    var divElement = document.getElementById("offerDivOutletNew");
+    var str="";
+    str+='<div class="row">';
+    str+='<input type="hidden" name="offer_'+offerIndex+'_id" value="null"/>';
+    str+='<div class="col-md-6 pull-left left"><input type="text" name="offer_'+offerIndex+'_desc" class="form-control" value=""></div>';
+    str+='<div class="col-md-6 pull-right"><select name="offer_'+offerIndex+'_active" id="offer_'+offerIndex+'_activeSelect"><option value="0">No</option><option value="1">Yes</option></select></div>';
+    str+='</div>';
+    divElement.innerHTML+= str;
+  }
+
+  function onBrandChanged(e){
+      var brandId = (e.options[e.selectedIndex].value);
+      window.location = "/brandupdate/"+brandId;
+  }
+
+</script>
