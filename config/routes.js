@@ -53,5 +53,6 @@ module.exports.routes = {
   'get /getOutlets':'TempController.getOutlets',
   'get /getOutletDetails':'TempController.getOutletDetails',
   'get /getRelatedBrandOutlets':'TempController.getRelatedBrandOutlets',
+  'get /admin': 'NgAdminController.index'
 
 };

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="ng-admin/css/ng-admin.min.css">
+    <script src="ng-admin/js/angular.min.js" type="text/javascript"></script>
+    <script src="ng-admin/js/ng-admin.min.js" type="text/javascript"></script>
+
+    <script>
+        var app = angular.module('myApp', ['ng-admin']);
+        app.config([
+            'NgAdminConfigurationProvider',
+            'Application',
+            'Entity',
+            'Field',
+            'Reference',
+            'ReferencedList',
+            'ReferenceMany',
+            'RestangularProvider',
+            function(
+                    NgAdminConfigurationProvider,
+                    Application,
+                    Entity,
+                    Field,
+                    Reference,
+                    ReferencedList,
+                    ReferenceMany,
+                    RestangularProvider
+                    ) {
+            // set the main API endpoint for this admin
+            var app = new Application(<%- jsonAppName %>)
+                    .baseApiUrl(<%- jsonUri %>);
+
+//            // set the list of fields to map in each post view
+//            book.dashboardView().addField(new Field('title').isDetailLink(true)) //.map(truncate),
+////                new ReferenceMany('tags') // a Reference is a particular type of field that references another entity
+////                        .targetEntity(tag) // the tag entity is defined later in this file
+////                        .targetField(new Field('name')) // the field to be displayed in this list
+////            ]);
+
+
+            /**
+             * Intercept response from the REST service, to turn nested objects their primary keys.
+             * Currently hard-codes 'id' as primary key.
+             */
+            RestangularProvider.addResponseInterceptor(function(response) {
+                // Only act on true object, not arrays
+                if ( ! angular.isArray(response) ) {
+                    // Cycle through each property of the object
+                    for (var key in response) {
+                        var primaryKey = 'id';
+                        // If the property is an array of objects, map if to an array of the primary keys of each object
+                        if (angular.isArray(response[key])) {
+                            response[key] = response[key].map(function (keyItem) {
+                                return keyItem[primaryKey] || keyItem;
+                            });
+                        // If it's an object, map it to its primary key
+                        } else if (response[key] && 'object' === typeof response[key]) {
+                            response[key] = response[key][primaryKey] || response[key];
+                        }
+                    }
+                }
+                return response;
+            });
+
+            /**
+             * Create a Sails-ified ListView for the given entity, i.e. with Sails-y sorting and pagination parameters,
+             * and parsing of search-text into a 'where' query parameter, using the queryField(s) supplied.
+             * @param entity.  ng-admin entity
+             * @param queryFields string or array of strings which should be searched when querying.
+             */
+            function sailsListView(entity, queryFields) {
+                var listView = entity.listView()
+                    // Sorting (ordering) parameters
+                        .sortParams(function (field, dir) {
+                            return {
+                                params: { sort: field + ' ' + String(dir).toLowerCase() },
+                                headers: {}
+                            };
+                        })
+                    // Pagination parameters
+                        .pagination(function (page, maxPerPage) {
+                            return {
+                                skip: (page - 1) * maxPerPage,
+                                limit: maxPerPage
+                            }
+                        });
+
+                // 'Where' parameters for queries with 'contains'
+                if ('undefined' !== typeof queryFields) {
+                    if ('string' === typeof queryFields) {
+                        queryFields = [queryFields];
+                    }
+                    listView.filterQuery(function (queryText) {
+                        return {
+                            where: JSON.stringify({
+                                or: queryFields.map(function (field) {
+                                    var where = {};
+                                    where[field] = {contains: queryText};
+                                    return where;
+                                })
+                            })
+                        };
+                    });
+
+                }
+
+                return listView;
+            }
+
+            <% entities.forEach(function(entity) { %>
+
+            var <%= entity.varName %> =
+            new Entity(<%- entity.jsonName %>)
+                    .identifier(new Field(<%- entity.jsonIdField %>));
+
+            app.addEntity(<%= entity.varName %>);
+
+            <% }); %>
+            <% entities.forEach(function(entity) { %>
+
+
+            sailsListView(<%= entity.varName %>, <%- entity.jsonSearchFields %>)
+                <% entity.fields.filter(function(field) { return field.inListView; }).forEach(function(field) { %>
+                    .addField(<%- field.jsFieldFactory %>)
+                <% }); %>
+            ;
+            <%= entity.varName %>.
+            creationView()
+                <% entity.fields.filter(function(field) { return field.inCreateView; }).forEach(function(field) { %>
+                    .addField(<%- field.jsFieldFactory %>)
+                <% }); %>
+            ;
+            <%= entity.varName %>.
+            editionView()
+                <% entity.fields.filter(function(field) { return field.inEditView; }).forEach(function(field) { %>
+                    .addField(<%- field.jsFieldFactory %>)
+                <% }); %>
+            ;
+            <% }); %>
+
+            NgAdminConfigurationProvider.configure(app);
+        }]);
+    </script>
+</head>
+<body ng-app="myApp">
+<div ui-view></div>
+</body>
+</html>
