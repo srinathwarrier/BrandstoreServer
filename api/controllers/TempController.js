@@ -153,6 +153,9 @@ module.exports = {
           if(rows[2]!=undefined){
             resultObj.relatedBrandsArray=rows[2];
           }
+          if(rows[3]!=undefined){
+            resultObj.offersArray=rows[3];
+          }
         }
         console.log(resultObj);
         res.json(resultObj);
