@@ -44,6 +44,26 @@ module.exports = {
     console.log("req.query.userid:"+req.query.userid);
     console.log("req.query:"+req.query);
 
+    /*
+     SELECT Outlet.outletID AS Id, Brand.brandName AS name, "outlet" AS type
+     FROM `Outlet`
+     INNER JOIN `Brand` ON Outlet.ownedByBrandID = Brand.brandID
+     INNER JOIN `BrandType` ON Brand.brandTypeID = BrandType.brandTypeID
+     WHERE Brand.brandName LIKE CONCAT('%', query , '%')
+     AND BrandType.active =1
+     AND Outlet.active = 1
+     UNION ALL
+     SELECT hubId, hubName, "hub"
+     FROM `Hub`
+     WHERE hubName LIKE CONCAT('%', query , '%')
+     UNION ALL
+     SELECT tagId, tagName, "category"
+     FROM `Tag`
+     WHERE tagName LIKE CONCAT('%', query , '%') AND Tag.active=1
+     ORDER BY type DESC;
+
+     */
+
 
     var callProcedureString = " CALL `getSuggestions` ( '"+userId+"' , '"+param+"' );" ;
     Brand.query(callProcedureString, function(err, rows) {
@@ -199,6 +219,66 @@ module.exports = {
     });
 
   },
+
+  getOutletsForQuery : function(req, res, connection) {
+    // Required variables : [ query , userid ]
+    // Optional variables : [ favorite=true , sale=true ,  ]
+    // Currently optional should be required : []
+
+    var query = req.query.q,
+      userId = req.query.userid;
+    if(userId==undefined) userId = 6;
+    var callProcedureString = "";
+    console.log("values- query "+query);
+
+
+    if(query!=undefined){
+      callProcedureString = "CALL `getOutletsByQuery` ( '"+userId+"' , '"+query+"'  );" ;
+    }
+    else {            //2b ) /getOutlets?id=20&type=category
+      if(type=="category"){
+        if (id.indexOf(',') == -1)
+        {
+          callProcedureString= "CALL `getOutletsByTagId` ( '"+userId+"' , '"+id+"' );" ;
+        }
+        else
+        {
+          callProcedureString= " CALL `getOutletsByTagIdArray` ( '"+userId+"' , '"+id+"' );" ;
+        }
+      }
+      else{
+        callProcedureString= " CALL `getOutletsByTagId` ( '"+userId+"' , 0 );" ;
+      }
+    }
+    Brand.query(callProcedureString, function(err, rows, fields) {
+      console.log("returned");
+      if (!err)
+      {
+        console.log('The solution is: ', rows[0]);
+        var result = rows[0];
+        for (index = 0; index < result.length; ++index) {
+          switch(result[index].floorNumber+"")
+          {
+            case '-1': result[index].floorNumber="Lower Ground Floor"; break;
+            case '0':  result[index].floorNumber="Ground Floor";       break;
+            case '1':  result[index].floorNumber="First Floor";        break;
+            case '2':  result[index].floorNumber="Second Floor";       break;
+            default: break;
+          }
+          //console.log("rows[index].floorNumber : "+rows[index].floorNumber);
+        }
+        res.json(result);
+      }
+      else{
+        console.log('Error while performing Query.'+err);
+        console.log('Query value:'+query + "and id : "+id);
+        console.log('callProcedureString:'+callProcedureString);
+        res.setHeader('Content-Type', 'text/html');
+        res.send(err );
+      }
+    });
+  },
+
 
 
 

@@ -44,15 +44,27 @@ module.exports.routes = {
   *                                                                          *
   ***************************************************************************/
   '/home':'BrandController.chooseBrand',
+  '/about':{ view:'pages/about'   },
+
+
   'get /choosebrand':'BrandController.chooseBrand',
   'get /brandupdate/:id':'BrandController.getupdatepage',
   'post /brandupdate': 'BrandController.myupdate',
-  '/about':{ view:'pages/about'   },
   'get /getRecentAndPopularSuggestions':'TempController.getRecentAndPopularSuggestions',
   'get /getSuggestions':'TempController.getSuggestions',
   'get /getOutlets':'TempController.getOutlets',
   'get /getOutletDetails':'TempController.getOutletDetails',
   'get /getRelatedBrandOutlets':'TempController.getRelatedBrandOutlets',
-  'get /admin': 'NgAdminController.index'
+  'get /admin': 'NgAdminController.index',
+
+  'get /v2/getRecentAndPopularSuggestions':'V2Controller.getRecentAndPopularSuggestions',
+  'get /v2/getSuggestions':'V2Controller.getSuggestions',
+  'get /v2/getOutlets':'V2Controller.getOutlets',
+  'get /v2/getOutletDetails':'V2Controller.getOutletDetails',
+  'get /v2/getRelatedBrandOutlets':'V2Controller.getRelatedBrandOutlets'
+
+
+
+
 
 };
