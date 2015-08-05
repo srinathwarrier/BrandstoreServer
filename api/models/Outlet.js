@@ -19,6 +19,10 @@ module.exports = {
       primaryKey: true,
       autoIncrement: true
     },
+    outletName : {
+      type: 'string',
+      size: 20
+    },
     ownedByBrandID : {
       type: 'integer',
       index: true,
@@ -36,6 +40,9 @@ module.exports = {
       type: 'integer',
       index: true,
       model:'FloorZone'
+    },
+    pointerValue :{
+      type : 'integer'
     },
     ratingValue : {
       type: 'integer'
