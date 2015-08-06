@@ -168,6 +168,7 @@ module.exports = {
         else{
           resultObj={};
           resultObj=rows[4][0];
+          resultObj.genderCodeString="";
           resultObj.tagsArray=[];
           resultObj.relatedBrandsArray=[];
           resultObj.offersArray=[];
