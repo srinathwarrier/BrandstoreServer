@@ -136,8 +136,9 @@ module.exports = {
     Brand.query(callProcedureString, function(err, rows, fields) {
       if (!err)
       {
-        console.log(rows);
+        console.log("rows:"+rows);
         var resultObj = rows[0][0];
+        console.log("resultObj:"+resultObj);
         if(resultObj!=undefined && resultObj && resultObj.floorNumber)
         {
           switch(resultObj.floorNumber+"")
@@ -160,6 +161,16 @@ module.exports = {
           if(rows[3]!=undefined){
             resultObj.offersArray=rows[3];
           }
+          if(rows[4]!=undefined){
+            resultObj.outletDetails=rows[4];
+          }
+        }
+        else{
+          resultObj={};
+          resultObj=rows[4][0];
+          resultObj.tagsArray=[];
+          resultObj.relatedBrandsArray=[];
+          resultObj.offersArray=[];
         }
         console.log(resultObj);
         res.json(resultObj);
