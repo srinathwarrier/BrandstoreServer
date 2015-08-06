@@ -172,6 +172,14 @@ module.exports = {
           resultObj.tagsArray=[];
           resultObj.relatedBrandsArray=[];
           resultObj.offersArray=[];
+          switch(resultObj.floorNumber+"")
+          {
+            case '-1': resultObj.floorNumber="Lower Ground Floor"; break;
+            case '0':  resultObj.floorNumber="Ground Floor";       break;
+            case '1':  resultObj.floorNumber="First Floor";        break;
+            case '2':  resultObj.floorNumber="Second Floor";       break;
+            default: break;
+          }
         }
         console.log(resultObj);
         res.json(resultObj);
