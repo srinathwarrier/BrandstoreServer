@@ -138,8 +138,8 @@ module.exports = {
       {
         console.log("rows:"+rows);
         var resultObj = rows[0][0];
-        console.log("resultObj:"+resultObj);
-        if(resultObj!=undefined && resultObj && resultObj.floorNumber)
+        console.log("resultObj:"+JSON.stringify(resultObj));
+        if(resultObj!=undefined && resultObj)
         {
           switch(resultObj.floorNumber+"")
           {
@@ -172,6 +172,7 @@ module.exports = {
           resultObj.tagsArray=[];
           resultObj.relatedBrandsArray=[];
           resultObj.offersArray=[];
+          console.log("getOutletDetails : floorNumber "+resultObj.floorNumber);
           switch(resultObj.floorNumber+"")
           {
             case '-1': resultObj.floorNumber="Lower Ground Floor"; break;
@@ -181,7 +182,7 @@ module.exports = {
             default: break;
           }
         }
-        console.log(resultObj);
+        console.log("getOutletDetails test : final "+JSON.stringify(resultObj));
         res.json(resultObj);
       }
       else{
