@@ -55,6 +55,13 @@ module.exports = {
       type: 'string',
       size: 100
     },
+    prominentTagID:{
+      type: 'integer',
+      model:'Tag'
+    },
+    prominentTagAvgPrice:function(){
+      return 'test';
+    },
     active : {
       type: 'integer',
       defaultsTo: '1'
@@ -66,6 +73,10 @@ module.exports = {
     },
     offers:{
       collection:'Offer',
+      via:'outletID'
+    },
+    favoritedBy:{
+      collection:'UserFavorite',
       via:'outletID'
     }
   }

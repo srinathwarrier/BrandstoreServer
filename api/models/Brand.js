@@ -51,6 +51,10 @@ module.exports = {
       type: 'string',
       size: 1000
     },
+    genderCodeString:{
+      type:'string',
+      size:10
+    },
     jabongUrl : {
       type: 'string',
       size: 1000

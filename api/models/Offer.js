@@ -17,7 +17,8 @@ module.exports = {
       "primaryKey": true
     },
     "outletID": {
-      "type": "integer"
+      "type": "integer",
+      "model":"Outlet"
     },
     "offerDesc": {
       type: 'string',

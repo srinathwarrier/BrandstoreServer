@@ -60,6 +60,10 @@ module.exports = {
     modifiedByUserID : {
       type: 'integer',
       index: true
+    },
+    favorites:{
+      collection:'UserFavorite',
+      via:'userID'
     }
   }
 };

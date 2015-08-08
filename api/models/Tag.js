@@ -39,6 +39,11 @@ module.exports = {
       type: 'datetime',
       required: true,
       defaultsTo: function() {return new Date();}
+    },
+    prominentTagOfBrand:{
+      collection:'Outlet',
+      via:'prominentTagID'
     }
+
   }
 };

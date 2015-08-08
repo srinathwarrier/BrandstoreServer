@@ -373,10 +373,120 @@ module.exports = {
 
 
 
+  },
+
+  getAllFavoriteOutlets : function(req,res,connection){
+    // input : userID
+    var userid = req.query.userid;
+    // output : outletArray
+    // Logic : From UserFavorite table, fetch the whole list of outletIDs , inner join it with the outlet table
+
+    UserFavorite
+      .find({select:['outletID']})
+      .where({userID : userid})
+      .exec(function (err, outletIdObjectArray) {
+        if(err){ console.log("Error:"+err);return;   }
+
+        var outletIdArray=_.pluck(outletIdObjectArray,'outletID'); // using LoDash
+
+
+        Outlet
+          .find({outletID:outletIdArray})
+          .populateAll()
+          .then(function(outletArray){
+
+            var staticAveragePricesArray = StaticAveragePrices
+             .find({select:['brandID','tagID','avgPrice']})
+             .where({brandID: _.pluck(_.pluck(outletArray,'ownedByBrandID'),'brandID')})
+             .then(function (staticAveragePricesArray) {
+                return staticAveragePricesArray;
+             });
+
+            return [outletArray , staticAveragePricesArray]
+          })
+          .spread(function(outletArray ,staticAveragePricesArray ){
+            if(err){ console.log("Error inside"+err); res.json({error:err}); }
+
+            console.log("outletArray:"+JSON.stringify(outletArray));
+            console.log("staticAveragePricesArray:"+JSON.stringify(staticAveragePricesArray));
+
+            function getResultObject(obj){
+              // Condition to find "isOnSale"
+              // 1. offers array should not be empty or undefined
+              // 2. Every offer should be active . i.e. every offer object's active property should be 'true'
+
+
+              // Calculate avgPrice for the prominentTagID if present
+              // 1. Check if prominentTagID is present
+              // 2. Check if this brandID and this tagID is present in staticAveragePricesArray
+              var avgPrice="";
+              if(obj.prominentTagID !=undefined) {
+                avgPrice= _.result( _.find(staticAveragePricesArray , {'brandID':obj.ownedByBrandID.brandID , 'tagID':obj.prominentTagID.tagID}) , 'avgPrice');
+              }
+
+              return {
+                outletName:obj.outletName,
+                imageUrl : obj.ownedByBrandID.imageUrl,
+                ratingValue : obj.ratingValue ,
+                phoneNumber : obj.phoneNumber,
+                emailId :obj.emailId,
+                floorNumber : obj.floorNumber ,
+                outletID: obj.outletID,
+                tagName : (obj.prominentTagID !=undefined  ? obj.prominentTagID.tagName: ""),
+                genderCodeString : obj.ownedByBrandID.genderCodeString ,
+                hubName : obj.hubID.hubName ,
+                isOnSale : ( (obj.offers.length!=0 && _.contains(_.pluck(obj.offers , 'active') ,true ) ) ? true :false ),
+                isFavorite:true,
+                avgPrice:avgPrice
+              };
+            }
+
+            var resultArray = _.map(outletArray , getResultObject );
+            console.log("result:"+JSON.stringify (resultArray ));
+
+            res.json(resultArray);
+
+          })
+          .catch(function(err) {
+            if (err) {
+              return res.serverError(err);
+            }
+          });
+
+
+
+      });
+
   }
 
 
 
+  /*
+
+
+   // create the result array
+   // Outlet > outletID,  outletName, ratingValue, phoneNumber , emailID , floorNumber
+   // Offer > isOnSale
+   // Brand > imageUrl , genderCodeString , , isOnSale ,
+   // Hub > hubName
+   // Tag > tagName
+   // StaticAveragePrice > avgPrice.
+   // .
+
+   SELECT
+   Brand.brandName, Brand.imageUrl,
+   Outlet.ratingValue, Outlet.phoneNumber,
+   Outlet.emailId , Outlet.floorNumber, Outlet.outletID ,
+   avg.tagName, avg.avgPrice, Brand.genderCodeString,
+   Hub.hubName ,
+   floor(rand() * 10) % 2 AS isOnSale,
+   floor(rand() * 10) % 2 AS isFavorite
+   FROM Outlet
+   INNER JOIN Hub ON Outlet.hubID = Hub.hubId
+   INNER JOIN Brand ON Outlet.ownedByBrandID = Brand.brandID
+   INNER JOIN StaticAveragePrices AS avg ON (Brand.brandID = avg.brandID )
+   WHERE avg.tagID = tagID;
+   */
 
 
 

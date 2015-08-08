@@ -21,11 +21,13 @@ module.exports = {
     },
     userID : {
       type: 'integer',
-      index: true
+      index: true,
+      "model":"User"
     },
     outletID : {
       type: 'integer',
-      index: true
+      index: true,
+      model:"Outlet"
     },
     createdDate : {
       type: 'datetime'
