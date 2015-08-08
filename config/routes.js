@@ -64,7 +64,9 @@ module.exports.routes = {
   'get /v2/getOutletDetails':'V2Controller.getOutletDetails',
   'get /v2/getRelatedBrandOutlets':'V2Controller.getRelatedBrandOutlets',
   'get /v2/getTakeMeThereCommands' :'V2Controller.getTakeMeThereCommands',
-  'get /v2/getAllFavoriteOutlets' : 'V2Controller.getAllFavoriteOutlets'
+  'get /v2/getAllFavoriteOutlets' : 'V2Controller.getAllFavoriteOutlets',
+  'get /v2/getOutletsForTagId' : 'V2Controller.getOutletsForTagId',
+  'get /v2/setFavoriteOutlet' : 'V2Controller.setFavoriteOutlet'
 
 
 
