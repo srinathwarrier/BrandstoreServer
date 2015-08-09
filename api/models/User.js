@@ -41,6 +41,10 @@ module.exports = {
     genderCode : {
       type: 'text'
     },
+    regid:{
+      type:'string',
+      size:1000
+    },
     active : {
       type: 'integer',
       defaultsTo: '1'

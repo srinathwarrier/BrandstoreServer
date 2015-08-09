@@ -44,6 +44,10 @@ module.exports = {
     pointerValue :{
       type : 'integer'
     },
+    turnDirectionToZoneEscalator:{
+      type:'string',
+      size:10
+    },
     ratingValue : {
       type: 'integer'
     },
@@ -58,9 +62,6 @@ module.exports = {
     prominentTagID:{
       type: 'integer',
       model:'Tag'
-    },
-    prominentTagAvgPrice:function(){
-      return 'test';
     },
     active : {
       type: 'integer',

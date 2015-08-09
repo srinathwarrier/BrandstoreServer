@@ -6,32 +6,63 @@
  */
 
 
+function getFloorNameFromFloorNumber(index){
+  var returnValue = "";
+  switch(index){
+    case '-1': returnValue = "Lower ground floor"; break;
+    case '0': returnValue = "Ground floor";break;
+    case '1': returnValue = "First floor";break;
+    case '2': returnValue = "Second floor";break;
+    default : returnValue = "";break;
+  }
+  return returnValue;
+}
+
+function getMeaningfulObjectFromOutlet(outletObject){
+  var returnObject = {};
+  returnObject.floor = outletObject.floorNumber;
+  returnObject.zone = outletObject.floorZoneID;
+  returnObject.pointer = outletObject.pointerValue;
+  returnObject.pointerSign = returnObject.pointer > 0 ? "plus" : "minus";
+  returnObject.pointerWithoutSign = Math.abs(returnObject.pointer);
+  return returnObject;
+}
+
+function isShorterDistanceToOutlet(outlet1, outlet2 , destOutlet){
+  outlet1 = getMeaningfulObjectFromOutlet(outlet1),
+    outlet2 = getMeaningfulObjectFromOutlet(outlet2),
+    destOutlet = getMeaningfulObjectFromOutlet(destOutlet);
+
+  //TODO : improve this algorithm with more information , currently uses only pointer
+
+  var distanceToOutlet1 = Math.abs(outlet1.pointer - destOutlet.pointer);
+  var distanceToOutlet2 = Math.abs(outlet2.pointer - destOutlet.pointer);
+  var isShorter = (distanceToOutlet1 <= distanceToOutlet2);
+}
+
+function getDifferentFloorTemplateUsingValues(fromOutletname,
+                                              firstDirection,
+                                              outletNameNearEscalator,
+                                              escalatorUpwardsOrDownwards,
+                                              escalatorFloorCount,
+                                              viaOutletName ,
+                                              toOutletName ){
+  return [
+    'Exit "'+fromOutletname+'" and take a '+firstDirection+'.',
+    'Reach the escalator near '+outletNameNearEscalator+'.',
+    'Take the escalator '+escalatorUpwardsOrDownwards +' by '+escalatorFloorCount+' floor.',
+    'Take the path via '+viaOutletName+'.',
+    'You have reached your destination : '+toOutletName+'.'
+  ];
+}
+
+function getEscalatorIdUsingFromOutletID(hubTransitArray, floor1,zone1,pointer1){
+  return _.find(hubTransitArray , {floorID : floor1, floorZoneID:zone1}); //TODO: Check if this escalator does go to floor2
+}
+
 module.exports = {
 
-  getRecentAndPopularSuggestions: function (req,res) {
-    Brand.find().exec(function(err, brandArray) {
-      var userId = req.params.id;
-      if(userId==undefined) userId = 6;
-
-      //var callProcedureString = "SET @p0 =  '"+userId+"'; CALL `getRecentAndPopularSuggestions` ( @p0 );" ;
-      var callProcedureString = "CALL `getRecentAndPopularSuggestions`("+userId+");" ;
-      Brand.query(callProcedureString, function(err, rows) {
-        if (!err)
-        {
-          console.log('The recent items are: ', rows[1]);
-          console.log('The popular items are: ', rows[2]);
-          var resultObj = {"recent":rows[1] , "popular":rows[2]};
-          res.json(resultObj);
-        }
-        else{
-          console.log('Error while performing Query.'+err);
-          console.log('callProcedureString:'+callProcedureString);
-          res.setHeader('Content-Type', 'text/html');
-          res.send(err);
-        }
-      });
-    });
-  },
+  //getRecentAndPopularSuggestions - Pending to be converted to Sails
 
 
   getSuggestions : function(req, res,connection) {
@@ -428,7 +459,8 @@ module.exports = {
       {
         console.log("rows:"+rows);
         var resultObj = rows[0][0];
-        if(resultObj!=undefined && resultObj && resultObj.floorNumber)
+        console.log("resultObj:"+JSON.stringify(resultObj));
+        if(resultObj!=undefined && resultObj)
         {
           switch(resultObj.floorNumber+"")
           {
@@ -451,10 +483,27 @@ module.exports = {
             resultObj.offersArray=rows[3];
           }
           if(rows[4]!=undefined){
-            resultObj.nullArray=rows[4];
+            resultObj.outletDetails=rows[4];
           }
         }
-        console.log("resultObj:"+resultObj);
+        else{
+          resultObj={};
+          resultObj=rows[4][0];
+          resultObj.genderCodeString="";
+          resultObj.tagsArray=[];
+          resultObj.relatedBrandsArray=[];
+          resultObj.offersArray=[];
+          console.log("getOutletDetails : floorNumber "+resultObj.floorNumber);
+          switch(resultObj.floorNumber+"")
+          {
+            case '-1': resultObj.floorNumber="Lower Ground Floor"; break;
+            case '0':  resultObj.floorNumber="Ground Floor";       break;
+            case '1':  resultObj.floorNumber="First Floor";        break;
+            case '2':  resultObj.floorNumber="Second Floor";       break;
+            default: break;
+          }
+        }
+        console.log("getOutletDetails test : final "+JSON.stringify(resultObj));
         res.json(resultObj);
       }
       else{
@@ -466,32 +515,7 @@ module.exports = {
   },
 
 
-  getRelatedBrandOutlets : function(req, res,connection) {
-    // 1) /getRelatedBrandOutlets?brandid=6
-    var brandId = req.query.brandid;
-    if(brandId==undefined) brandId = 12;
-
-    var callProcedureString = "CALL `getRelatedBrandOutlets` ( '"+brandId+"' );" ;
-    Brand.query(callProcedureString, function(err, rows, fields) {
-      if (!err)
-      {
-        console.log('rows length is: ',rows.length);
-        console.log('rows[0] length is: ',rows[0].length);
-        console.log('rows[1] length is: ',rows[1].length);
-        console.log('The solution is: ', JSON.stringify(rows));
-        console.log('The solution is: ', rows[0]);
-        res.json(rows);
-      }
-      else{
-        console.log('Error while performing Query.'+err);
-        console.log('Param value:'+param);
-        console.log('callProcedureString:'+callProcedureString);
-        res.setHeader('Content-Type', 'text/html');
-        res.send(err );
-      }
-    });
-
-  },
+  //getRelatedBrandOutlets
 
   getOutletsForQuery : function(req, res, connection) {
     // Required variables : [ query , userid ]
@@ -552,40 +576,122 @@ module.exports = {
     });
   },
 
-  getTemplateUsingValues:function(fromOutletname,
-                                  firstDirection,
-                                  outletNameNearEscalator,
-                                  escalatorUpwardsOrDownwards,
-                                  escalatorFloorCount,
-                                  viaOutletName ,
-                                  toOutletName ){
-    return [
-      'Exit "'+fromOutletname+'" and take a '+firstDirection+'.',
-      'Reach the escalator near '+outletNameNearEscalator+'.',
-      'Take the escalator '+escalatorUpwardsOrDownwards +' by '+escalatorFloorCount+' floor.',
-      'Take the path via '+viaOutletName+'.',
-      'You have reached your destination : '+toOutletName+'.'
-    ];
-  },
+
 
   getTakeMeThereCommands:function(req,res,connection){
-    var fromOutletID = req.query.fromoutletid;
-    var toOutletID = req.query.tooutletid;
+    var fromOutletID = parseInt(req.query.fromoutletid);
+    var toOutletID = parseInt(req.query.tooutletid);
 
-    // fetch all details from
+    // fetch all details from Outlet & HubTransit
     // floor1 , zone1 , pointer1 ,
     // floor2 , zone2 , pointer2 ,
 
-    Outlet.find([{'outletId':fromOutletID},{'outletId':toOutletID}])
-      .populateAll()
+    Outlet.find({'outletId':[fromOutletID ,toOutletID]})
       .then(function(outletArray){
-        var hubTransitArray = HubTransit.find().then(function(hubTransitArray){
-          return hubTransitArray;
+
+        var allOutletsArray =     Outlet
+          .find()
+          .then(function(outletArray){
+              return outletArray;
+          });
+
+        var hubTransitArray = HubTransit
+          .find()
+          .where({transitType: "escalator"})
+          .then(function(hubTransitArray){
+            return hubTransitArray;
         });
-        return [outletArray,hubTransitArray];
+        return [outletArray,hubTransitArray , allOutletsArray];
       })
-      .spread(function(outletArray,hubTransitArray){
-        return res.json({outletArray:outletArray,hubTransitArray:hubTransitArray})
+      .spread(function(outletArray,hubTransitArray , allOutletsArray){
+        // All values are available here. Rename properly for easier use
+        var fromIndex = _.findIndex(outletArray,{outletID:fromOutletID});
+        var toIndex = _.findIndex(outletArray,{outletID:toOutletID});
+
+        var floor1 = outletArray[fromIndex].floorNumber,
+          floor2 = outletArray[toIndex].floorNumber,
+          zone1 = outletArray[fromIndex].floorZoneID,
+          zone2 = outletArray[toIndex].floorZoneID,
+          pointer1 = outletArray[fromIndex].pointerValue,
+          pointer2 = outletArray[toIndex].pointerValue,
+          name1 = outletArray[fromIndex].outletName,
+          name2 = outletArray[toIndex].outletName
+          ;
+
+        // 1. Find out which template to use
+        if(floor1 != floor2){
+          // use different floor template
+
+          // find exitDirection from outlet1
+          var dir1 = outletArray[fromIndex].turnDirectionToZoneEscalator;
+          console.log("dir1:"+dir1);
+
+          // find isGoingUp  and floorDiff
+          var diff = Math.abs(floor2 - floor1);
+          var isGoingUp = (floor1 < floor2)?"up":"down";
+          console.log("diff:"+diff + " and isGoingUp:"+isGoingUp);
+
+          // Find which escalator to use on floor1
+          var esc1= getEscalatorIdUsingFromOutletID(hubTransitArray, floor1, zone1, pointer1);
+
+          console.log("Escalator 1:"+JSON.stringify(esc1));
+          var esc1nearbyOutletName = _.find(allOutletsArray , {outletID : esc1.nearbyOutlet1ID}).outletName;
+          var escName1 = esc1.escalatorName;
+
+
+          var esc2 = _.find(hubTransitArray , { escalatorName:escName1,floorID:floor2 });
+          console.log("Escalator 2:"+JSON.stringify(esc2));
+
+          // find the via outlet
+          // get pointer value of the toOutlet.
+
+          var nearbyOutlet1 = _.find(allOutletsArray , {outletID:esc2.nearbyOutlet1ID});
+          var nearbyOutlet2 = _.find(allOutletsArray , {outletID:esc2.nearbyOutlet2ID});
+          var nearbyOutlet3 = _.find(allOutletsArray , {outletID:esc2.nearbyOutlet3ID});
+          var nearbyOutlet4 = _.find(allOutletsArray , {outletID:esc2.nearbyOutlet4ID});
+          console.log("pointer2 :"+pointer2);
+          console.log("nearbyOutlet1pointer :"+nearbyOutlet1.pointerValue);
+          console.log("nearbyOutlet2pointer :"+nearbyOutlet2.pointerValue);
+          console.log("nearbyOutlet3pointer :"+nearbyOutlet3.pointerValue);
+          console.log("nearbyOutlet4pointer :"+nearbyOutlet4.pointerValue);
+
+          var viaOutletName="";
+          if(pointer2 > 0){
+            // on the side of nearbyOutlet1ID and nearbyOutlet2ID
+            //if(distanceToOutlet1 == distanceToOutlet2){  //TODO: check
+            viaOutletName = ( isShorterDistanceToOutlet(nearbyOutlet1 , nearbyOutlet2 ,outletArray[toIndex] )  )?(nearbyOutlet1.outletName):(nearbyOutlet2.outletName);
+
+          }else{
+            // on the side of nearbyOutlet3ID and nearbyOutlet4ID
+            //if(distanceToOutlet1 == distanceToOutlet2){  //TODO: check
+            viaOutletName = ( isShorterDistanceToOutlet(nearbyOutlet3 , nearbyOutlet4 ,outletArray[toIndex] )  )?(nearbyOutlet3.outletName):(nearbyOutlet4.outletName);
+          }
+
+          var returnValue = getDifferentFloorTemplateUsingValues(
+            name1,dir1,esc1nearbyOutletName,isGoingUp,diff,viaOutletName , name2);
+
+          console.log("returnValue:"+returnValue);
+          res.json(returnValue);
+
+
+
+
+
+        }
+        else{
+          // use same floor template
+          res.json({Error:"Still being developed"});
+        }
+
+        // 2. Call the template required with the input values
+        // 3. Return the string array to the output
+
+        // If floor1 == floor2
+
+
+
+
+        return ;//res.json({outletArray:outletArray,hubTransitArray:hubTransitArray})
       })
       .catch(function(err) {
         if (err) {
@@ -808,17 +914,7 @@ module.exports = {
    WHERE avg.tagID = tagID;
    */
 
-  getFloorNameFromFloorNumber : function(index){
-    var returnValue = "";
-    switch(index){
-      case '-1': returnValue = "Lower ground floor"; break;
-      case '0': returnValue = "Ground floor";break;
-      case '1': returnValue = "First floor";break;
-      case '2': returnValue = "Second floor";break;
-      default : returnValue = "";break;
-    }
-    return returnValue;
-  },
+
 
   setFavoriteOutlet : function(req,res,connection){
     // Required variables : [ (query) , (id,type=category) , (id[],type=category) ]
@@ -851,6 +947,20 @@ module.exports = {
         });
     }
 
+
+  },
+
+  updateRegID : function(req,res,connection){
+    //Required variables : userid , regid
+
+    var userID = req.query.userid ,
+      regID  = req.query.regid;
+
+    User.update({userID:userID},{regid:regID}).exec(function (err,updated) {
+      if(err){ console.log("Error"+err); res.send(err);     }
+      console.log("Updated"+JSON.stringify(updated));
+      res.json(updated);
+    })
 
   }
 

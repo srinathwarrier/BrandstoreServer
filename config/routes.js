@@ -58,15 +58,17 @@ module.exports.routes = {
   'get /admin': 'NgAdminController.index',
 
 
-  'get /v2/getRecentAndPopularSuggestions':'V2Controller.getRecentAndPopularSuggestions',
+  //'get /v2/getRecentAndPopularSuggestions':'V2Controller.getRecentAndPopularSuggestions',
   'get /v2/getSuggestions':'V2Controller.getSuggestions',
   'get /v2/getOutlets':'V2Controller.getOutlets',
   'get /v2/getOutletDetails':'V2Controller.getOutletDetails',
-  'get /v2/getRelatedBrandOutlets':'V2Controller.getRelatedBrandOutlets',
+  //'get /v2/getRelatedBrandOutlets':'V2Controller.getRelatedBrandOutlets',
   'get /v2/getTakeMeThereCommands' :'V2Controller.getTakeMeThereCommands',
   'get /v2/getAllFavoriteOutlets' : 'V2Controller.getAllFavoriteOutlets',
   'get /v2/getOutletsForTagId' : 'V2Controller.getOutletsForTagId',
-  'get /v2/setFavoriteOutlet' : 'V2Controller.setFavoriteOutlet'
+  'get /v2/setFavoriteOutlet' : 'V2Controller.setFavoriteOutlet',
+  'get /v2/updateRegID' : 'V2Controller.updateRegID'
+
 
 
 
