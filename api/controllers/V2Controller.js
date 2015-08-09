@@ -749,6 +749,16 @@ module.exports = {
               if(obj.prominentTagID !=undefined) {
                 avgPrice= _.result( _.find(staticAveragePricesArray , {'brandID':obj.ownedByBrandID.brandID , 'tagID':obj.prominentTagID.tagID}) , 'avgPrice');
               }
+              var returnValue="";
+              switch(obj.floorNumber+""){
+                case '-1': returnValue = "Lower ground floor"; break;
+                case '0': returnValue = "Ground floor";break;
+                case '1': returnValue = "First floor";break;
+                case '2': returnValue = "Second floor";break;
+                default : returnValue = "";break;
+              }
+              obj.floorNumber = returnValue;
+
 
               return {
                 outletName:obj.outletName,
