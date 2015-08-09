@@ -234,6 +234,8 @@ module.exports = {
               if( _.find(userFavoriteArray , { 'outletID' : obj.outletID}) !=undefined ){   obj.isFavorite = true;   }
               else { obj.isFavorite = false;  }
 
+              obj.outletName = obj.brandName;
+
               return obj;
             }
             console.log("userFavoriteArray:"+JSON.stringify (userFavoriteArray ));
