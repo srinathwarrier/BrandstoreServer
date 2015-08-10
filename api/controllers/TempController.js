@@ -136,7 +136,7 @@ module.exports = {
     Brand.query(callProcedureString, function(err, rows, fields) {
       if (!err)
       {
-        console.log("rows:"+rows);
+        console.log("rows:"+JSON.stringify(rows));
         var resultObj = rows[0][0];
         console.log("resultObj:"+JSON.stringify(resultObj));
         if(resultObj!=undefined && resultObj)
