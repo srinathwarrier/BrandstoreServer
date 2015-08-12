@@ -450,7 +450,7 @@ module.exports = {
     var userId = req.query.userid;
     if(userId==undefined) userId = 6;
     var callProcedureString= "CALL `getOutletDetailsForOutletID` ( '"+userId+"' , '"+id+"' );" ;
-
+    //var callFavoritesStrings = "CALL"
     Brand.query(callProcedureString, function(err, rows, fields) {
       if (!err)
       {
@@ -468,8 +468,10 @@ module.exports = {
             default: break;
           }
         }
+
         if(resultObj!=undefined && resultObj)
         {
+
           if(rows[1]!=undefined){
             resultObj.tagsArray=rows[1];
           }
@@ -482,11 +484,14 @@ module.exports = {
           if(rows[4]!=undefined){
             resultObj.outletDetails=rows[4];
           }
+
+
         }
         else{
           resultObj={};
           resultObj=rows[4][0];
           resultObj.genderCodeString="";
+
           resultObj.tagsArray=[];
           resultObj.relatedBrandsArray=[];
           resultObj.offersArray=[];
@@ -501,7 +506,20 @@ module.exports = {
           }
         }
         console.log("getOutletDetails test : final "+JSON.stringify(resultObj));
-        res.json(resultObj);
+        UserFavorite
+          .find({select:['userID','outletID']})
+          .where({'userID':userId , 'outletID':id})// amongst these outlets , find the ones selected as Favourite by this user
+          .exec(function (err, userFavoriteArray) {
+            //console.log("getOutletDetails test : final2 "+JSON.stringify(userFavoriteArray));
+            if(userFavoriteArray.length >0)
+              resultObj.isFavorite = true;
+            else
+              resultObj.isFavorite = false;
+            res.json(resultObj);
+
+          });
+
+
       }
       else{
         console.log('Error while performing Query.'+err);
