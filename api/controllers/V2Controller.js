@@ -52,7 +52,18 @@ function getDifferentFloorTemplateUsingValues(fromOutletname,
     'Reach the escalator near '+outletNameNearEscalator+'.',
     'Take the escalator '+escalatorUpwardsOrDownwards +' by '+escalatorFloorCount+' floor.',
     'Take the path via '+viaOutletName+'.',
-    'You have reached your destination : '+toOutletName+'.'
+    'Your destination : '+toOutletName+' would be on your '+firstDirection +'.'
+  ];
+}
+
+function getSameFloorTemplateUsingValues(fromOutletname,
+                                              firstDirection,
+                                         numberOfOutletsInBetween,
+                                              toOutletName ){
+  return [
+    'Exit "'+fromOutletname+'" and take a '+firstDirection+'.',
+    'Walk in the same Direction and cross '+numberOfOutletsInBetween+' outlets ',
+    'Your destination : '+toOutletName+' would be on your '+firstDirection+'.'
   ];
 }
 
@@ -633,6 +644,9 @@ module.exports = {
           name2 = outletArray[toIndex].outletName
           ;
 
+
+
+
         // 1. Find out which template to use
         if(floor1 != floor2){
           // use different floor template
@@ -640,6 +654,9 @@ module.exports = {
           // find exitDirection from outlet1
           var dir1 = outletArray[fromIndex].turnDirectionToZoneEscalator;
           console.log("dir1:"+dir1);
+          //calculating directions
+
+
 
           // find isGoingUp  and floorDiff
           var diff = Math.abs(floor2 - floor1);
@@ -695,7 +712,36 @@ module.exports = {
         }
         else{
           // use same floor template
-          res.json({Error:"Still being developed"});
+
+          //if shops are on the same side on the floor
+          if((pointer1>0 && pointer2>0)|| (pointer1<0 && pointer2<0)) {
+            if((pointer1>0 && pointer2>0))
+            {
+              //rights side of the mall
+              if(pointer2 >pointer1)
+                dir1 = "Right";
+              else
+                dir1 = "Left";
+            }
+            else
+            {
+              //left side of the mall
+              if(pointer2 >pointer1)
+                dir1 = "Left";
+              else
+                dir1 = "Right";
+            }
+            var diff2 = Math.abs(pointer1-pointer2)
+            var returnValue = getSameFloorTemplateUsingValues(
+              name1,dir1,diff2, name2);
+          }
+          else {
+            //Opposite side of the mall
+
+          }
+          console.log("returnValue:"+returnValue);
+          res.json(returnValue);
+          //res.json({Error:"Still being developed"});
         }
 
         // 2. Call the template required with the input values
