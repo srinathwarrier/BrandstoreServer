@@ -26,6 +26,14 @@ module.exports = {
     userName : {
       type: 'text'
     },
+    emailid : {
+      type:'string',
+      size:50
+    },
+    password :{
+      type:'string',
+      size:50
+    },
     firstName : {
       type: 'text'
     },

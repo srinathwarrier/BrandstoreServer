@@ -52,7 +52,19 @@ function getDifferentFloorTemplateUsingValues(fromOutletname,
     'Reach the escalator near '+outletNameNearEscalator+'.',
     'Take the escalator '+escalatorUpwardsOrDownwards +' by '+escalatorFloorCount+' floor.',
     'Take the path via '+viaOutletName+'.',
-    'You have reached your destination : '+toOutletName+'.'
+    'Your destination : '+toOutletName+' would be on your '+firstDirection +'.'
+  ];
+}
+
+function getSameFloorTemplateUsingValues(fromOutletname,
+                                         firstDirection,
+                                         numberOfOutletsInBetween,
+                                         toOutletName,
+                                         destinationDirection ){
+  return [
+    'Exit "'+fromOutletname+'" and take a '+firstDirection+'.',
+    'Walk in the same Direction and cross '+numberOfOutletsInBetween+' outlets ',
+    'Your destination : '+toOutletName+' would be on your '+destinationDirection+'.'
   ];
 }
 
@@ -72,20 +84,20 @@ module.exports = {
     if(userId==undefined) userId = 6;
 
     /*
-    var queryString = "SELECT Outlet.outletID AS Id, Outlet.outletName AS name, \"outlet\" AS type FROM `Outlet` INNER JOIN `Brand` ON Outlet.ownedByBrandID = Brand.brandID INNER JOIN `BrandType` ON Brand.brandTypeID = BrandType.brandTypeID WHERE Brand.brandName LIKE CONCAT('%', '"+param+"' , '%') AND BrandType.active =1 AND Outlet.active = 1 "+
-                      "UNION ALL SELECT hubId, hubName, \"hub\" FROM `Hub` WHERE hubName LIKE CONCAT('%', '"+param+"', '%') "+
-                      "UNION ALL SELECT tagId, tagName, \"category\" FROM `Tag` WHERE tagName LIKE CONCAT('%', '"+param+"' , '%') AND Tag.active=1 ORDER BY type DESC;";
-    console.log("query:"+queryString);
-    Outlet.query(queryString, function (err,rows) {
-        if (!err)
-        {
-          console.log("Success1"+JSON.stringify(rows));
-        }
-        else {
-          console.log('Error1 while performing Query.' + err);
-        }
-    });
-    */
+     var queryString = "SELECT Outlet.outletID AS Id, Outlet.outletName AS name, \"outlet\" AS type FROM `Outlet` INNER JOIN `Brand` ON Outlet.ownedByBrandID = Brand.brandID INNER JOIN `BrandType` ON Brand.brandTypeID = BrandType.brandTypeID WHERE Brand.brandName LIKE CONCAT('%', '"+param+"' , '%') AND BrandType.active =1 AND Outlet.active = 1 "+
+     "UNION ALL SELECT hubId, hubName, \"hub\" FROM `Hub` WHERE hubName LIKE CONCAT('%', '"+param+"', '%') "+
+     "UNION ALL SELECT tagId, tagName, \"category\" FROM `Tag` WHERE tagName LIKE CONCAT('%', '"+param+"' , '%') AND Tag.active=1 ORDER BY type DESC;";
+     console.log("query:"+queryString);
+     Outlet.query(queryString, function (err,rows) {
+     if (!err)
+     {
+     console.log("Success1"+JSON.stringify(rows));
+     }
+     else {
+     console.log('Error1 while performing Query.' + err);
+     }
+     });
+     */
 
 
     Outlet
@@ -353,84 +365,84 @@ module.exports = {
 
 
 
-/*        Outlet
-          .find({outletID:_.pluck(rows[0],'outletID')})
-          .populateAll()
-          .then(function (outletArray) {
-            console.log("inside");
-            var userFavoriteArray = UserFavorite
-              .find({select:['userID','outletID']})
-              .where({'userID':userId , 'outletID':_.pluck(rows[0],'outletID')})// amongst these outlets , find the ones selected as Favourite by this user
-              .then(function (userFavoriteArray) {
-                return userFavoriteArray;
-              });
+        /*        Outlet
+         .find({outletID:_.pluck(rows[0],'outletID')})
+         .populateAll()
+         .then(function (outletArray) {
+         console.log("inside");
+         var userFavoriteArray = UserFavorite
+         .find({select:['userID','outletID']})
+         .where({'userID':userId , 'outletID':_.pluck(rows[0],'outletID')})// amongst these outlets , find the ones selected as Favourite by this user
+         .then(function (userFavoriteArray) {
+         return userFavoriteArray;
+         });
 
-            var isOnSaleArray = Offer
-              .find({select:['outletID','active','offerID']})
-              .where({outletID:_.pluck(rows[0],'outletID') , active:true})  // find active offers for these outlets
-              .then(function (offerArray) {
-                return offerArray;
-              });
-            return [outletArray, userFavoriteArray , isOnSaleArray];
-          })
-          .spread(function (outletArray , userFavoriteArray , isOnSaleArray) {
-            console.log("userFavoriteArray:"+JSON.stringify (userFavoriteArray ));
-            console.log("isOnSaleArray:"+JSON.stringify (isOnSaleArray ));
+         var isOnSaleArray = Offer
+         .find({select:['outletID','active','offerID']})
+         .where({outletID:_.pluck(rows[0],'outletID') , active:true})  // find active offers for these outlets
+         .then(function (offerArray) {
+         return offerArray;
+         });
+         return [outletArray, userFavoriteArray , isOnSaleArray];
+         })
+         .spread(function (outletArray , userFavoriteArray , isOnSaleArray) {
+         console.log("userFavoriteArray:"+JSON.stringify (userFavoriteArray ));
+         console.log("isOnSaleArray:"+JSON.stringify (isOnSaleArray ));
 
-            // Add isFavorite to resultArray
-            // Add isOnSale to resultArray
+         // Add isFavorite to resultArray
+         // Add isOnSale to resultArray
 
-            function getResultObject(obj){
+         function getResultObject(obj){
 
-              // Change values
+         // Change values
 
-              var returnValue="";
-              switch(obj.floorNumber){
-                case '-1': returnValue = "Lower ground floor"; break;
-                case '0': returnValue = "Ground floor";break;
-                case '1': returnValue = "First floor";break;
-                case '2': returnValue = "Second floor";break;
-                default : returnValue = "";break;
-              }
-              obj.floorNumber = returnValue;
-              obj.hubName = obj.hubID.hubName;
+         var returnValue="";
+         switch(obj.floorNumber){
+         case '-1': returnValue = "Lower ground floor"; break;
+         case '0': returnValue = "Ground floor";break;
+         case '1': returnValue = "First floor";break;
+         case '2': returnValue = "Second floor";break;
+         default : returnValue = "";break;
+         }
+         obj.floorNumber = returnValue;
+         obj.hubName = obj.hubID.hubName;
 
-              // Check if isOnSaleArray has any objects for this outletID
-              if( _.find(isOnSaleArray , { 'outletID' : obj.outletID}) ){
-                obj.isOnSale = true;
-              }else{
-                obj.isOnSale = false;
-              }
+         // Check if isOnSaleArray has any objects for this outletID
+         if( _.find(isOnSaleArray , { 'outletID' : obj.outletID}) ){
+         obj.isOnSale = true;
+         }else{
+         obj.isOnSale = false;
+         }
 
-              console.log("outletID:"+obj.outletID +" and "+ (_.find(userFavoriteArray , { 'outletID' : obj.outletID})!=undefined) );
-              // Check if userFavoriteArray has any objects for this outletID
-              if( _.find(userFavoriteArray , { 'outletID' : obj.outletID}) !=undefined ){
-                obj.isFavorite = true;
-              }else{
-                obj.isFavorite = false;
-              }
+         console.log("outletID:"+obj.outletID +" and "+ (_.find(userFavoriteArray , { 'outletID' : obj.outletID})!=undefined) );
+         // Check if userFavoriteArray has any objects for this outletID
+         if( _.find(userFavoriteArray , { 'outletID' : obj.outletID}) !=undefined ){
+         obj.isFavorite = true;
+         }else{
+         obj.isFavorite = false;
+         }
 
-              // Add new columns
-
-
-              // delete old names from obj
-              delete obj.ownedByBrandID;
-              delete obj.hubID;
+         // Add new columns
 
 
+         // delete old names from obj
+         delete obj.ownedByBrandID;
+         delete obj.hubID;
 
 
 
 
-              return obj;
-            }
 
-            var resultArray = _.map(outletArray , getResultObject );
 
-            res.json(resultArray);
-          })
-          .catch();
-          */
+         return obj;
+         }
+
+         var resultArray = _.map(outletArray , getResultObject );
+
+         res.json(resultArray);
+         })
+         .catch();
+         */
       }
       else{
         console.log('Error while performing Query.'+err);
@@ -450,7 +462,7 @@ module.exports = {
     var userId = req.query.userid;
     if(userId==undefined) userId = 6;
     var callProcedureString= "CALL `getOutletDetailsForOutletID` ( '"+userId+"' , '"+id+"' );" ;
-
+    //var callFavoritesStrings = "CALL"
     Brand.query(callProcedureString, function(err, rows, fields) {
       if (!err)
       {
@@ -468,8 +480,10 @@ module.exports = {
             default: break;
           }
         }
+
         if(resultObj!=undefined && resultObj)
         {
+
           if(rows[1]!=undefined){
             resultObj.tagsArray=rows[1];
           }
@@ -482,11 +496,14 @@ module.exports = {
           if(rows[4]!=undefined){
             resultObj.outletDetails=rows[4];
           }
+
+
         }
         else{
           resultObj={};
           resultObj=rows[4][0];
           resultObj.genderCodeString="";
+
           resultObj.tagsArray=[];
           resultObj.relatedBrandsArray=[];
           resultObj.offersArray=[];
@@ -501,7 +518,20 @@ module.exports = {
           }
         }
         console.log("getOutletDetails test : final "+JSON.stringify(resultObj));
-        res.json(resultObj);
+        UserFavorite
+          .find({select:['userID','outletID']})
+          .where({'userID':userId , 'outletID':id})// amongst these outlets , find the ones selected as Favourite by this user
+          .exec(function (err, userFavoriteArray) {
+            //console.log("getOutletDetails test : final2 "+JSON.stringify(userFavoriteArray));
+            if(userFavoriteArray.length >0)
+              resultObj.isFavorite = true;
+            else
+              resultObj.isFavorite = false;
+            res.json(resultObj);
+
+          });
+
+
       }
       else{
         console.log('Error while performing Query.'+err);
@@ -573,7 +603,72 @@ module.exports = {
     });
   },
 
+  getSameFloorOppositeSidesTemplate1: function(fromOutletname,exitBridgeDir,pendingOutletsToTravel,toOutletName,toOutletDir) {
+    //the from outlet has a bridge right in front of it.
+    return [
+      'Exit "'+fromOutletname+'" and take a the bridge Ahead',
+      'Exit the bridge on your '+exitBridgeDir+' and continue for '+pendingOutletsToTravel +' outlets ',
+      'Your destination : '+toOutletName+' would be on your '+toOutletDir+'.'
+    ];
 
+  },
+  getSameFloorOppositeSidesTemplate2: function(fromOutletname,exitBridgeDir,pendingOutletsToTravel,toOutletName,toOutletDir) {
+    //the from outlet has a bridge right in front of it and the destination outlet is right on the other side of the bridge
+    return [
+      'Exit "' + fromOutletname + '" and take a the bridge Ahead',
+      'Exit the bridge and your destination ' + toOutletName + ' shoule be stright ahead '
+    ];
+  },
+
+  getSameFloorOppositeSidesTemplate3: function(fromOutletname,exitDir,outletsBetweenFromAndBridge,exitBridgeDir,outletsBetweenBridgeAndTo, toOutletName,toOutletDir) {
+    //the from outlet does not have a bridge in front of it.
+    if(exitDir != null) {
+      return [
+        'Exit "' + fromOutletname + '" on your' + exitDir + ' .',
+        'Go ahead' + outletsBetweenFromAndBridge + ' outlets and take the bridge.',
+        'Exit the bridge on your ' + exitBridgeDir + ' and continue for ' + outletsBetweenBridgeAndTo + ' outlets ',
+        'Your destination : ' + toOutletName + ' would be on your ' + toOutletDir + '.'
+      ];
+    }
+    else
+    {
+      // destination is right in front of the bridge
+      return [
+        'Exit "' + fromOutletname + '" on your' + exitDir + ' .',
+        'Go ahead' + outletsBetweenFromAndBridge + ' outlets and take the bridge.',
+        'Exit the bridge and your destination ' + toOutletName + ' shoule be stright ahead '];
+    }
+  },
+
+  findTheClosestBridge: function(bridgesArray,sourcePointer,destinationPointer){
+    var closestBridgeOnLeft = bridgesArray[0];
+    var closestBridgeOnRight= bridgesArray[0];
+    for(var x=1;x<bridgesArray.length;x++) {
+      if(Math.abs(bridgesArray[x].nearbyOutlet2ID) < Math.abs(sourcePointer) && Math.abs(bridgesArray[x].nearbyOutlet3ID) > Math.abs(sourcePointer))
+      {// the outlet is in front of a bridge
+        return bridgesArray[x];
+      }
+      if(Math.abs(bridgesArray[x].nearbyOutlet3ID)<Math.abs(sourcePointer)) {
+        if(Math.abs(closestBridgeOnLeft.nearbyOutlet3ID) - Math.abs(sourcePointer) > Math.abs(bridgesArray[x].nearbyOutlet3ID) - Math.abs(sourcePointer)) {
+          closestBridgeOnLeft = bridgesArray[x];
+        }
+        else
+          continue;
+      }
+      if(Math.abs(bridgesArray[x].nearbyOutlet2ID)>Math.abs(sourcePointer)) {
+        if(Math.abs(closestBridgeOnLeft.nearbyOutlet2ID) - Math.abs(sourcePointer) > Math.abs(bridgesArray[x].nearbyOutlet2ID) - Math.abs(sourcePointer)) {
+          closestBridgeOnRight = bridgesArray[x];
+        }
+        else
+          continue;
+      }
+    }
+    if((Math.abs(closestBridgeOnLeft.nearbyOutlet3ID) - Math.abs(sourcePointer))<(Math.abs(closestBridgeOnLeft.nearbyOutlet2ID) - Math.abs(sourcePointer)))
+      return closestBridgeOnLeft;
+    else
+      return closestBridgeOnRight;
+    return null;
+  },
 
   getTakeMeThereCommands:function(req,res,connection){
     var fromOutletID = parseInt(req.query.fromoutletid);
@@ -589,7 +684,7 @@ module.exports = {
         var allOutletsArray =     Outlet
           .find()
           .then(function(outletArray){
-              return outletArray;
+            return outletArray;
           });
 
         var hubTransitArray = HubTransit
@@ -597,7 +692,7 @@ module.exports = {
           .where({transitType: "escalator"})
           .then(function(hubTransitArray){
             return hubTransitArray;
-        });
+          });
         return [outletArray,hubTransitArray , allOutletsArray];
       })
       .spread(function(outletArray,hubTransitArray , allOutletsArray){
@@ -615,6 +710,9 @@ module.exports = {
           name2 = outletArray[toIndex].outletName
           ;
 
+
+
+
         // 1. Find out which template to use
         if(floor1 != floor2){
           // use different floor template
@@ -622,6 +720,9 @@ module.exports = {
           // find exitDirection from outlet1
           var dir1 = outletArray[fromIndex].turnDirectionToZoneEscalator;
           console.log("dir1:"+dir1);
+          //calculating directions
+
+
 
           // find isGoingUp  and floorDiff
           var diff = Math.abs(floor2 - floor1);
@@ -677,7 +778,198 @@ module.exports = {
         }
         else{
           // use same floor template
-          res.json({Error:"Still being developed"});
+          var returnValue;
+          //if shops are on the same side on the floor
+          if((pointer1>0 && pointer2>0)|| (pointer1<0 && pointer2<0)) {
+            if((pointer1>0 && pointer2>0))
+            {
+              //rights side of the mall
+              if(pointer2 >pointer1)
+                dir1 = "Right";
+              else
+                dir1 = "Left";
+            }
+            else
+            {
+              //left side of the mall
+              if(pointer2 >pointer1)
+                dir1 = "Left";
+              else
+                dir1 = "Right";
+            }
+            var diff2 = Math.abs(pointer1-pointer2)
+            returnValue = getSameFloorTemplateUsingValues(
+              name1,dir1,diff2, name2,dir1);
+          }
+          else {
+            //Opposite side of the mall
+            var hubTransitArray2 = HubTransit
+              .find()
+              .where({transitType: "bridge",floorID: floor1,floorZoneID:zone1})
+              .then(function(hubTransitArray2){
+                return hubTransitArray2;
+              });
+
+            console.log("hub transit:"+hubTransitArray2);
+
+            if (hubTransitArray2 == undefined || hubTransitArray2 == null)
+            {
+              // there are no bridges so the user can directly go across
+              var exitFromSourceDir;
+              var destinationDir;
+              if(Math.abs(pointer2)>Math.abs(pointer1)) {
+                exitFromSourceDir = "right";
+                destinationDir = "left";
+              }
+              else {
+                exitFromSourceDir = "left";
+                destinationDir = "right";
+              }
+              returnValue = getSameFloorTemplateUsingValues(
+                name1,exitFromSourceDir,Math.abs(pointer1-pointer2), name2,destinationDir);
+            }
+            else {
+              // there are bridges in that zone hence user needs to take the bridge
+              var closestBridge = findTheClosestBridge(hubTransitArray2,pointer1,pointer2);
+
+              if(pointer1== closestBridge.nearbyOutlet1ID
+                || pointer1 == closestBridge.nearbyOutlet2ID
+                || pointer1 == closestBridge.nearbyOutlet3ID
+                || pointer1 == closestBridge.nearbyOutlet4ID
+                ||(Math.abs(pointer1) > Math.abs(closestBridge.nearbyOutlet2ID) && Math.abs(pointer1) < Math.abs(closestBridge.nearbyOutlet3ID))
+                ||(Math.abs(pointer1) > Math.abs(closestBridge.nearbyOutlet1ID) && Math.abs(pointer1) < Math.abs(closestBridge.nearbyOutlet4ID))){
+
+                // if the outlet is on the bridge or in between a bridge we can directly ask the user to go to the other side.
+
+                var leftPointer = closestBridge.nearbyOutlet1ID;
+                var rightPointer = closestBridge.nearbyOutlet4ID;
+                // var exitBridgeDirection;
+
+                if(leftPointer > pointer2) {
+                  //the destination outlet is on the left after exiting the bridge
+                  // exitBridgeDirection = "left"
+                  returnValue = getSameFloorOppositeSidesTemplate1(
+                    name1,"left",leftPointer-pointer2, name2);
+                }
+                else if(rightPointer < pointer2) {
+                  //the destination outlet is on the right after exiting the bridge
+                  //exitBridgeDirection = "right"
+                  returnValue = getSameFloorOppositeSidesTemplate1(
+                    name1,"right",pointer2-rightPointer, name2);
+                }
+                else if(pointer2 >leftPointer && pointer2< rightPointer) {
+                  //the destination is on the opposite end of the bridge
+                  returnValue = getSameFloorOppositeSidesTemplate2(
+                    name1, name2);
+                }
+              }
+              else
+              {
+                // if from outlet is not in front of a bridge
+                var exitDir;
+                var outletsBetweenFromAndBridge;
+                var outletsBetweenBridgeAndTo;
+                var exitBridgeDir;
+                var destinationDir;
+                if(pointer1 <0){
+                  //from outlet of the right side of the mall
+                  if(Math.abs(closestBridge.nearbyOutlet1ID) > Math.abs(pointer1)) {
+                    exitDir = "left";
+                    outletsBetweenFromAndBridge = Math.abs(closestBridge.nearbyOutlet1ID) - Math.abs(pointer1);
+                    //if destination outlet is on the other end of the bridge
+                    if((Math.abs(pointer2) == Math.abs(closestBridge.nearbyOutlet2ID))
+                      ||(Math.abs(pointer2) == Math.abs(closestBridge.nearbyOutlet3ID))
+                      ||(Math.abs(pointer2)>Math.abs(closestBridge.nearbyOutlet2ID)&& (Math.abs(pointer2)<Math.abs(closestBridge.nearbyOutlet3ID))))
+                      exitBridgeDir = null;
+                    else {
+                      if(Math.abs(pointer2) < Math.abs(closestBridge.nearbyOutlet2ID)) {
+                        exitBridgeDir = "right";
+                        outletsBetweenBridgeAndTo = Math.abs(closestBridge.nearbyOutlet2ID) - Math.abs(pointer2);
+                        destinationDir = "left";
+                      }
+                      else
+                      {
+                        exitBridgeDir = "left";
+                        outletsBetweenBridgeAndTo = Math.abs(closestBridge.nearbyOutlet3ID) - Math.abs(pointer2);
+                        destinationDir = "right";
+                      }
+                    }
+                  }
+                  else {
+                    exitDir = "right";
+                    outletsBetweenFromAndBridge = Math.abs(closestBridge.nearbyOutlet4ID) - Math.abs(pointer1);
+                    if((Math.abs(pointer2) == Math.abs(closestBridge.nearbyOutlet2ID))
+                      ||(Math.abs(pointer2) == Math.abs(closestBridge.nearbyOutlet3ID))
+                      ||(Math.abs(pointer2)>Math.abs(closestBridge.nearbyOutlet2ID)&& (Math.abs(pointer2)<Math.abs(closestBridge.nearbyOutlet3ID))))
+                      exitBridgeDir = null;
+                    else {
+                      if(Math.abs(pointer2) < Math.abs(closestBridge.nearbyOutlet2ID)) {
+                        exitBridgeDir = "right";
+                        outletsBetweenBridgeAndTo = Math.abs(closestBridge.nearbyOutlet2ID) - Math.abs(pointer2);
+                        destinationDir = "left";
+                      }
+                      else
+                      {
+                        exitBridgeDir = "left";
+                        outletsBetweenBridgeAndTo = Math.abs(closestBridge.nearbyOutlet3ID) - Math.abs(pointer2);
+                        destinationDir = "right";
+                      }
+                    }
+                  }
+                }
+                else {
+                  //from outlet on the left side of te mall
+                  if(Math.abs(closestBridge.nearbyOutlet2ID) > Math.abs(pointer1)) {
+                    exitDir = "right";
+                    outletsBetweenFromAndBridge = Math.abs(closestBridge.nearbyOutlet2ID) - Math.abs(pointer1);
+                    if((Math.abs(pointer2) == Math.abs(closestBridge.nearbyOutlet2ID))
+                      ||(Math.abs(pointer2) == Math.abs(closestBridge.nearbyOutlet3ID))
+                      ||(Math.abs(pointer2)>Math.abs(closestBridge.nearbyOutlet2ID)&& (Math.abs(pointer2)<Math.abs(closestBridge.nearbyOutlet3ID))))
+                      exitBridgeDir = null;
+                    else {
+                      if(Math.abs(pointer2) < Math.abs(closestBridge.nearbyOutlet1ID)) {
+                        exitBridgeDir = "left";
+                        outletsBetweenBridgeAndTo = Math.abs(closestBridge.nearbyOutlet1ID) - Math.abs(pointer2);
+                        destinationDir = "right";
+                      }
+                      else
+                      {
+                        exitBridgeDir = "right";
+                        outletsBetweenBridgeAndTo = Math.abs(closestBridge.nearbyOutlet4ID) - Math.abs(pointer2);
+                        destinationDir = "left";
+                      }
+                    }
+                  }
+                  else {
+                    exitDir = "left";
+                    outletsBetweenFromAndBridge = Math.abs(closestBridge.nearbyOutlet3ID) - Math.abs(pointer1);
+                    if((Math.abs(pointer2) == Math.abs(closestBridge.nearbyOutlet2ID))
+                      ||(Math.abs(pointer2) == Math.abs(closestBridge.nearbyOutlet3ID))
+                      ||(Math.abs(pointer2)>Math.abs(closestBridge.nearbyOutlet2ID)&& (Math.abs(pointer2)<Math.abs(closestBridge.nearbyOutlet3ID))))
+                      exitBridgeDir = null;
+                    else {
+                      if(Math.abs(pointer2) < Math.abs(closestBridge.nearbyOutlet1ID)) {
+                        exitBridgeDir = "left";
+                        outletsBetweenBridgeAndTo = Math.abs(closestBridge.nearbyOutlet1ID) - Math.abs(pointer2);
+                        destinationDir = "right";
+                      }
+                      else
+                      {
+                        exitBridgeDir = "right";
+                        outletsBetweenBridgeAndTo = Math.abs(closestBridge.nearbyOutlet4ID) - Math.abs(pointer2);
+                        destinationDir = "left";
+                      }
+                    }
+                  }
+                }
+                returnValue = getSameFloorOppositeSidesTemplate3(
+                  name1,exitDir,outletsBetweenFromAndBridge,exitBridgeDir,outletsBetweenBridgeAndTo, name2,destinationDir);
+              }
+            }
+          }
+          console.log("returnValue:"+returnValue);
+          res.json(returnValue);
+          //res.json({Error:"Still being developed"});
         }
 
         // 2. Call the template required with the input values
@@ -722,11 +1014,11 @@ module.exports = {
           .then(function(outletArray){
 
             var staticAveragePricesArray = StaticAveragePrices
-             .find({select:['brandID','tagID','avgPrice']})
-             .where({brandID: _.pluck(_.pluck(outletArray,'ownedByBrandID'),'brandID')})
-             .then(function (staticAveragePricesArray) {
+              .find({select:['brandID','tagID','avgPrice']})
+              .where({brandID: _.pluck(_.pluck(outletArray,'ownedByBrandID'),'brandID')})
+              .then(function (staticAveragePricesArray) {
                 return staticAveragePricesArray;
-             });
+              });
 
             return [outletArray , staticAveragePricesArray]
           })
@@ -992,20 +1284,20 @@ module.exports = {
         res.send(err);
         return;
       }
-        console.log(result);
-        UserInteraction.create({
-          userID:6,
-          userInteractionTypeID:9, // 9 is gcmNotification
-          userInteractionLog:JSON.stringify(result)
-        }).exec(function(err,created){
-          if(err){
-            console.log('Error in creating interaction:' + JSON.stringify(err));
-          }
-          else{
-            console.log('Created interaction:' + JSON.stringify(created));
-          }
-        });
-        res.json(result);
+      console.log(result);
+      UserInteraction.create({
+        userID:6,
+        userInteractionTypeID:9, // 9 is gcmNotification
+        userInteractionLog:JSON.stringify(result)
+      }).exec(function(err,created){
+        if(err){
+          console.log('Error in creating interaction:' + JSON.stringify(err));
+        }
+        else{
+          console.log('Created interaction:' + JSON.stringify(created));
+        }
+      });
+      res.json(result);
     });
 
     //sender.sendNoRetry(message, regIds, function (err, result) {
