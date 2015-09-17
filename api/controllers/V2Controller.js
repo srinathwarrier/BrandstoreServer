@@ -6,14 +6,24 @@
  */
 
 
-function getFloorNameFromFloorNumber(index){
+function getFloorNameFromFloorNumber(index) {
   var returnValue = "";
-  switch(index){
-    case '-1': returnValue = "Lower ground floor"; break;
-    case '0': returnValue = "Ground floor";break;
-    case '1': returnValue = "First floor";break;
-    case '2': returnValue = "Second floor";break;
-    default : returnValue = "";break;
+  switch (index) {
+    case '-1':
+      returnValue = "Lower ground floor";
+      break;
+    case '0':
+      returnValue = "Ground floor";
+      break;
+    case '1':
+      returnValue = "First floor";
+      break;
+    case '2':
+      returnValue = "Second floor";
+      break;
+    default :
+      returnValue = "";
+      break;
   }
   return returnValue;
 }
@@ -114,6 +124,7 @@ function getDifferentFloorTemplateUsingValues(fromOutletname,
     'Take the path via ' + viaOutletName + '.',
     'Your destination : ' + toOutletName + ' would be on your ' + firstDirection + '.'
   ];
+
 }
 
 function getSameFloorTemplateUsingValues(fromOutletname,
@@ -199,28 +210,28 @@ module.exports = {
 
 
     Outlet
-      .find({select:['outletID','outletName']})
-      .where({outletName:{contains:param}})
-      .where({active:true})
+      .find({select: ['outletID', 'outletName']})
+      .where({outletName: {contains: param}})
+      .where({active: true})
       .sort('outletName')
       .then(function (outletArray) {
         // prepare the outletArray
-        for(var outletIndex in outletArray){
-          outletArray[outletIndex].type="outlet";
-          outletArray[outletIndex].name=outletArray[outletIndex].outletName;
-          outletArray[outletIndex].Id=outletArray[outletIndex].outletID;
+        for (var outletIndex in outletArray) {
+          outletArray[outletIndex].type = "outlet";
+          outletArray[outletIndex].name = outletArray[outletIndex].outletName;
+          outletArray[outletIndex].Id = outletArray[outletIndex].outletID;
           delete outletArray[outletIndex].outletID;
           delete outletArray[outletIndex].outletName;
         }
 
         // get hubArray and prepare
-        var hubArray = Hub.find({select:['hubID','hubName']})
-          .where({hubName:{contains:param}})
+        var hubArray = Hub.find({select: ['hubID', 'hubName']})
+          .where({hubName: {contains: param}})
           .then(function (hubArray) {
-            for(var hubIndex in hubArray){
-              hubArray[hubIndex].type="hub";
-              hubArray[hubIndex].name=hubArray[hubIndex].hubName;
-              hubArray[hubIndex].Id=hubArray[hubIndex].hubID;
+            for (var hubIndex in hubArray) {
+              hubArray[hubIndex].type = "hub";
+              hubArray[hubIndex].name = hubArray[hubIndex].hubName;
+              hubArray[hubIndex].Id = hubArray[hubIndex].hubID;
               delete hubArray[hubIndex].hubID;
               delete hubArray[hubIndex].hubName;
             }
@@ -228,25 +239,25 @@ module.exports = {
           });
 
         //get tagArray and prepare
-        var tagArray = Tag.find({select:['tagID','tagName']})
-          .where({tagName:{contains:param}})
+        var tagArray = Tag.find({select: ['tagID', 'tagName']})
+          .where({tagName: {contains: param}})
           .then(function (tagArray) {
-            for(var tagIndex in tagArray){
-              tagArray[tagIndex].type="category";
-              tagArray[tagIndex].name=tagArray[tagIndex].tagName;
-              tagArray[tagIndex].Id=tagArray[tagIndex].tagID;
+            for (var tagIndex in tagArray) {
+              tagArray[tagIndex].type = "category";
+              tagArray[tagIndex].name = tagArray[tagIndex].tagName;
+              tagArray[tagIndex].Id = tagArray[tagIndex].tagID;
               delete tagArray[tagIndex].tagID;
               delete tagArray[tagIndex].tagName;
             }
             return tagArray;
           });
-        return [outletArray , hubArray,tagArray];
+        return [outletArray, hubArray, tagArray];
       })
-      .spread(function(outletArray , hubArray,tagArray){
-        var resultArray = outletArray.concat(hubArray , tagArray);
+      .spread(function (outletArray, hubArray, tagArray) {
+        var resultArray = outletArray.concat(hubArray, tagArray);
         return res.json(resultArray);
       })
-      .catch(function(err) {
+      .catch(function (err) {
         if (err) {
           return res.serverError(err);
         }
@@ -255,14 +266,14 @@ module.exports = {
 
     // Add to the user interaction table : 4 is the userInteractionTypeID for Suggestion
     UserInteraction.create({
-      userID:userId,
-      userInteractionTypeID:4,
-      userInteractionLog:param
-    }).exec(function(err,created){
-      if(err){
+      userID: userId,
+      userInteractionTypeID: 4,
+      userInteractionLog: param
+    }).exec(function (err, created) {
+      if (err) {
         console.log('Error in creating interaction:' + JSON.stringify(err));
       }
-      else{
+      else {
         console.log('Created interaction:' + JSON.stringify(created));
       }
     });
@@ -270,38 +281,34 @@ module.exports = {
   },
 
 
-
-  getOutlets : function(req, res, connection) {
+  getOutlets: function (req, res, connection) {
     // Required variables : [ (query) , (id,type=category) , (id[],type=category) ]
     // Optional variables : [ favorite=true , sale=true ,  ]
     // Currently optional should be required : [userid]
 
     var query = req.query.q,
-      tagid = req.query.tagid ,
-      type= req.query.type,
+      tagid = req.query.tagid,
+      type = req.query.type,
       userId = req.query.userid;
-    if(userId==undefined) userId = 6;
+    if (userId == undefined) userId = 6;
     var callProcedureString = "";
 
-    if(type=="tag"){
-      if (tagid.indexOf(',') == -1)
-      {
-        callProcedureString= "CALL `getOutletsByTagId` ( '"+userId+"' , '"+tagid+"' );" ;
+    if (type == "tag") {
+      if (tagid.indexOf(',') == -1) {
+        callProcedureString = "CALL `getOutletsByTagId` ( '" + userId + "' , '" + tagid + "' );";
       }
-      else
-      {
-        callProcedureString= " CALL `getOutletsByTagIdArray` ( '"+userId+"' , '"+tagid+"' );" ;
+      else {
+        callProcedureString = " CALL `getOutletsByTagIdArray` ( '" + userId + "' , '" + tagid + "' );";
       }
-    }else if (type=="query"){
-      callProcedureString = "CALL `getOutletsByQuery` ( '"+userId+"' , '"+query+"'  );" ;
-    }else{
-      callProcedureString= " CALL `getOutletsByTagId` ( '"+userId+"' , 0 );" ;
+    } else if (type == "query") {
+      callProcedureString = "CALL `getOutletsByQuery` ( '" + userId + "' , '" + query + "'  );";
+    } else {
+      callProcedureString = " CALL `getOutletsByTagId` ( '" + userId + "' , 0 );";
     }
 
-    Brand.query(callProcedureString, function(err, rows, fields) {
+    Brand.query(callProcedureString, function (err, rows, fields) {
       console.log("returned");
-      if (!err)
-      {
+      if (!err) {
         console.log('The solution is: ', rows[0]);
 
         // 1. Here you have the outlet list. Only values left are isOnSale and isFavorite
@@ -310,159 +317,212 @@ module.exports = {
 
         var result = rows[0];
         for (index = 0; index < result.length; ++index) {
-          switch(result[index].floorNumber+"")
-          {
-            case '-1': result[index].floorNumber="Lower Ground Floor"; break;
-            case '0':  result[index].floorNumber="Ground Floor";       break;
-            case '1':  result[index].floorNumber="First Floor";        break;
-            case '2':  result[index].floorNumber="Second Floor";       break;
-            default: break;
+          switch (result[index].floorNumber + "") {
+            case '-1':
+              result[index].floorNumber = "Lower Ground Floor";
+              break;
+            case '0':
+              result[index].floorNumber = "Ground Floor";
+              break;
+            case '1':
+              result[index].floorNumber = "First Floor";
+              break;
+            case '2':
+              result[index].floorNumber = "Second Floor";
+              break;
+            default:
+              break;
           }
           //console.log("rows[index].floorNumber : "+rows[index].floorNumber);
         }
         UserFavorite
-          .find({select:['userID','outletID']})
-          .where({'userID':userId , 'outletID':_.pluck(result,'outletID')})// amongst these outlets , find the ones selected as Favourite by this user
+          .find({select: ['userID', 'outletID']})
+          .where({'userID': userId, 'outletID': _.pluck(result, 'outletID')})// amongst these outlets , find the ones selected as Favourite by this user
           .then(function (userFavoriteArray) {
 
             var isOnSaleArray = Offer
-              .find({select:['outletID','active','offerID']})
-              .where({outletID:_.pluck(result,'outletID') , active:true})  // find active offers for these outlets
+              .find({select: ['outletID', 'active', 'offerID']})
+              .where({outletID: _.pluck(result, 'outletID'), active: true})  // find active offers for these outlets
               .then(function (offerArray) {
                 return offerArray;
               });
-            return [userFavoriteArray,isOnSaleArray];
+            return [userFavoriteArray, isOnSaleArray];
           })
-          .spread(function (userFavoriteArray , isOnSaleArray) {
+          .spread(function (userFavoriteArray, isOnSaleArray) {
 
-            function getResultObject(obj){
+            function getResultObject(obj) {
               // Check if isOnSaleArray has any objects for this outletID
-              if( _.find(isOnSaleArray , { 'outletID' : obj.outletID}) ){  obj.isOnSale = true;}
-              else{ obj.isOnSale = false;      }
+              if (_.find(isOnSaleArray, {'outletID': obj.outletID})) {
+                obj.isOnSale = true;
+              }
+              else {
+                obj.isOnSale = false;
+              }
 
               // Check if userFavoriteArray has any objects for this outletID
-              if( _.find(userFavoriteArray , { 'outletID' : obj.outletID}) !=undefined ){   obj.isFavorite = true;   }
-              else { obj.isFavorite = false;  }
+              if (_.find(userFavoriteArray, {'outletID': obj.outletID}) != undefined) {
+                obj.isFavorite = true;
+              }
+              else {
+                obj.isFavorite = false;
+              }
 
               obj.outletName = obj.brandName;
 
               return obj;
             }
-            console.log("userFavoriteArray:"+JSON.stringify (userFavoriteArray ));
-            console.log("isOnSaleArray:"+JSON.stringify (isOnSaleArray));
-            console.log("result:"+JSON.stringify (result));
 
-            var resultArray = _.map(result , getResultObject );
+            console.log("userFavoriteArray:" + JSON.stringify(userFavoriteArray));
+            console.log("isOnSaleArray:" + JSON.stringify(isOnSaleArray));
+            console.log("result:" + JSON.stringify(result));
+
+            var resultArray = _.map(result, getResultObject);
             //var resultArray = outletArray;
             res.json(resultArray);
 
           })
-          .catch(function(err){
+          .catch(function (err) {
             res.send(err);
           });
       }
-      else{
-        console.log('Error while performing Query.'+err);
-        console.log('Query value:'+query + "and id : "+id);
-        console.log('callProcedureString:'+callProcedureString);
+      else {
+        console.log('Error while performing Query.' + err);
+        console.log('Query value:' + query + "and id : " + id);
+        console.log('callProcedureString:' + callProcedureString);
         res.setHeader('Content-Type', 'text/html');
-        res.send(err );
+        res.send(err);
       }
     });
   },
 
 
-  getOutletsForTagId : function(req, res, connection) {
+  getOutletsForTagId: function (req, res, connection) {
     // Required variables : id , userid
     // Optional variables : [ favorite=true , sale=true ,  ]
 
     var query = req.query.q,
-      id = req.query.id ,
-      type= req.query.type,
+      id = req.query.id,
+      type = req.query.type,
       userId = req.query.userid;
-    if(userId==undefined) userId = 6;
+    if (userId == undefined) userId = 6;
     var callProcedureString = "";
-    console.log("values- query "+query+" id "+id+" type "+type);
+    console.log("values- query " + query + " id " + id + " type " + type);
 
 
-    if(query!=undefined){
-      callProcedureString = "CALL `getOutletsByQuery` ( '"+userId+"' , '"+query+"'  );" ;
+    if (query != undefined) {
+      callProcedureString = "CALL `getOutletsByQuery` ( '" + userId + "' , '" + query + "'  );";
     }
     else {            //2b ) /getOutlets?id=20&type=category
-      if (id.indexOf(',') == -1)
-      {
-        callProcedureString= "CALL `getOutletsByTagId` ( '"+userId+"' , '"+id+"' );" ;
+      if (id.indexOf(',') == -1) {
+        callProcedureString = "CALL `getOutletsByTagId` ( '" + userId + "' , '" + id + "' );";
       }
-      else
-      {
-        callProcedureString= " CALL `getOutletsByTagIdArray` ( '"+userId+"' , '"+id+"' );" ;
+      else {
+        callProcedureString = " CALL `getOutletsByTagIdArray` ( '" + userId + "' , '" + id + "' );";
       }
     }
-    Brand.query(callProcedureString, function(err, rows, fields) {
-      if (!err)
-      {
+    Brand.query(callProcedureString, function (err, rows, fields) {
+      if (!err) {
         //console.log('The solution is: ', rows[0]);
 
         // 1. Here you have the outlet list. Only values left are isOnSale and isFavorite
         // These values need to be fetched from the tables : Offer and UserFavorite.
 
 
-
         var result = rows[0];
         for (index = 0; index < result.length; ++index) {
-          switch(result[index].floorNumber+"")
-          {
-            case '-1': result[index].floorNumber="Lower Ground Floor"; break;
-            case '0':  result[index].floorNumber="Ground Floor";       break;
-            case '1':  result[index].floorNumber="First Floor";        break;
-            case '2':  result[index].floorNumber="Second Floor";       break;
-            default: break;
+          switch (result[index].floorNumber + "") {
+            case '-1':
+              result[index].floorNumber = "Lower Ground Floor";
+              break;
+            case '0':
+              result[index].floorNumber = "Ground Floor";
+              break;
+            case '1':
+              result[index].floorNumber = "First Floor";
+              break;
+            case '2':
+              result[index].floorNumber = "Second Floor";
+              break;
+            default:
+              break;
           }
           //console.log("rows[index].floorNumber : "+rows[index].floorNumber);
         }
 
         UserFavorite
-          .find({select:['userID','outletID']})
-          .where({'userID':userId , 'outletID':_.pluck(result,'outletID')})// amongst these outlets , find the ones selected as Favourite by this user
+          .find({select: ['userID', 'outletID']})
+          .where({'userID': userId, 'outletID': _.pluck(result, 'outletID')})// amongst these outlets , find the ones selected as Favourite by this user
           .then(function (userFavoriteArray) {
 
             var isOnSaleArray = Offer
-              .find({select:['outletID','active','offerID']})
-              .where({outletID:_.pluck(result,'outletID') , active:true})  // find active offers for these outlets
+              .find({select: ['outletID', 'active', 'offerID']})
+              .where({outletID: _.pluck(result, 'outletID'), active: true})  // find active offers for these outlets
               .then(function (offerArray) {
                 return offerArray;
               });
-            return [userFavoriteArray,isOnSaleArray];
+            return [userFavoriteArray, isOnSaleArray];
           })
-          .spread(function (userFavoriteArray , isOnSaleArray) {
+          .spread(function (userFavoriteArray, isOnSaleArray) {
 
-            function getResultObject(obj){
+            function getResultObject(obj) {
               // Check if isOnSaleArray has any objects for this outletID
-              if( _.find(isOnSaleArray , { 'outletID' : obj.outletID}) ){  obj.isOnSale = true;}
-              else{ obj.isOnSale = false;      }
+              if (_.find(isOnSaleArray, {'outletID': obj.outletID})) {
+                obj.isOnSale = true;
+              }
+              else {
+                obj.isOnSale = false;
+              }
 
               // Check if userFavoriteArray has any objects for this outletID
-              if( _.find(userFavoriteArray , { 'outletID' : obj.outletID}) !=undefined ){   obj.isFavorite = true;   }
-              else { obj.isFavorite = false;  }
+              if (_.find(userFavoriteArray, {'outletID': obj.outletID}) != undefined) {
+                obj.isFavorite = true;
+              }
+              else {
+                obj.isFavorite = false;
+              }
 
               return obj;
             }
-            console.log("userFavoriteArray:"+JSON.stringify (userFavoriteArray ));
-            console.log("isOnSaleArray:"+JSON.stringify (isOnSaleArray));
-            console.log("result:"+JSON.stringify (result));
 
-            var resultArray = _.map(result , getResultObject );
+            console.log("userFavoriteArray:" + JSON.stringify(userFavoriteArray));
+            console.log("isOnSaleArray:" + JSON.stringify(isOnSaleArray));
+            console.log("result:" + JSON.stringify(result));
+
+            var resultArray = _.map(result, getResultObject);
             //var resultArray = outletArray;
             res.json(resultArray);
 
           })
-          .catch(function(err){
+          .catch(function (err) {
             res.send(err);
           });
 
 
+        /*        Outlet
+         .find({outletID:_.pluck(rows[0],'outletID')})
+         .populateAll()
+         .then(function (outletArray) {
+         console.log("inside");
+         var userFavoriteArray = UserFavorite
+         .find({select:['userID','outletID']})
+         .where({'userID':userId , 'outletID':_.pluck(rows[0],'outletID')})// amongst these outlets , find the ones selected as Favourite by this user
+         .then(function (userFavoriteArray) {
+         return userFavoriteArray;
+         });
 
+         var isOnSaleArray = Offer
+         .find({select:['outletID','active','offerID']})
+         .where({outletID:_.pluck(rows[0],'outletID') , active:true})  // find active offers for these outlets
+         .then(function (offerArray) {
+         return offerArray;
+         });
+         return [outletArray, userFavoriteArray , isOnSaleArray];
+         })
+         .spread(function (outletArray , userFavoriteArray , isOnSaleArray) {
+         console.log("userFavoriteArray:"+JSON.stringify (userFavoriteArray ));
+         console.log("isOnSaleArray:"+JSON.stringify (isOnSaleArray ));
 
+<<<<<<< HEAD
         /*        Outlet
          .find({outletID:_.pluck(rows[0],'outletID')})
          .populateAll()
@@ -521,12 +581,54 @@ module.exports = {
          }
 
          // Add new columns
+=======
+         // Add isFavorite to resultArray
+         // Add isOnSale to resultArray
 
+         function getResultObject(obj){
+
+         // Change values
+
+         var returnValue="";
+         switch(obj.floorNumber){
+         case '-1': returnValue = "Lower ground floor"; break;
+         case '0': returnValue = "Ground floor";break;
+         case '1': returnValue = "First floor";break;
+         case '2': returnValue = "Second floor";break;
+         default : returnValue = "";break;
+         }
+         obj.floorNumber = returnValue;
+         obj.hubName = obj.hubID.hubName;
+
+         // Check if isOnSaleArray has any objects for this outletID
+         if( _.find(isOnSaleArray , { 'outletID' : obj.outletID}) ){
+         obj.isOnSale = true;
+         }else{
+         obj.isOnSale = false;
+         }
+
+         console.log("outletID:"+obj.outletID +" and "+ (_.find(userFavoriteArray , { 'outletID' : obj.outletID})!=undefined) );
+         // Check if userFavoriteArray has any objects for this outletID
+         if( _.find(userFavoriteArray , { 'outletID' : obj.outletID}) !=undefined ){
+         obj.isFavorite = true;
+         }else{
+         obj.isFavorite = false;
+         }
+
+         // Add new columns
+
+>>>>>>> sumeetbranch
 
          // delete old names from obj
          delete obj.ownedByBrandID;
          delete obj.hubID;
 
+<<<<<<< HEAD
+         // delete old names from obj
+         delete obj.ownedByBrandID;
+         delete obj.hubID;
+=======
+>>>>>>> sumeetbranch
 
 
 
@@ -535,6 +637,12 @@ module.exports = {
          return obj;
          }
 
+<<<<<<< HEAD
+         return obj;
+         }
+
+=======
+>>>>>>> sumeetbranch
          var resultArray = _.map(outletArray , getResultObject );
 
          res.json(resultArray);
@@ -542,86 +650,99 @@ module.exports = {
          .catch();
          */
       }
-      else{
-        console.log('Error while performing Query.'+err);
-        console.log('Query value:'+query + "and id : "+id);
-        console.log('callProcedureString:'+callProcedureString);
+      else {
+        console.log('Error while performing Query.' + err);
+        console.log('Query value:' + query + "and id : " + id);
+        console.log('callProcedureString:' + callProcedureString);
         res.setHeader('Content-Type', 'text/html');
-        res.send(err );
+        res.send(err);
       }
     });
   },
 
 
-  getOutletDetails : function(req, res,connection) {
+  getOutletDetails: function (req, res, connection) {
     // 3)  /getOutletDetails?id=100
 
     var id = req.query.id;
     var userId = req.query.userid;
-    if(userId==undefined) userId = 6;
-    var callProcedureString= "CALL `getOutletDetailsForOutletID` ( '"+userId+"' , '"+id+"' );" ;
+    if (userId == undefined) userId = 6;
+    var callProcedureString = "CALL `getOutletDetailsForOutletID` ( '" + userId + "' , '" + id + "' );";
     //var callFavoritesStrings = "CALL"
-    Brand.query(callProcedureString, function(err, rows, fields) {
-      if (!err)
-      {
-        console.log("rows:"+rows);
+    Brand.query(callProcedureString, function (err, rows, fields) {
+      if (!err) {
+        console.log("rows:" + rows);
         var resultObj = rows[0][0];
-        console.log("resultObj:"+JSON.stringify(resultObj));
-        if(resultObj!=undefined && resultObj)
-        {
-          switch(resultObj.floorNumber+"")
-          {
-            case '-1': resultObj.floorNumber="Lower Ground Floor"; break;
-            case '0':  resultObj.floorNumber="Ground Floor";       break;
-            case '1':  resultObj.floorNumber="First Floor";        break;
-            case '2':  resultObj.floorNumber="Second Floor";       break;
-            default: break;
+        console.log("resultObj:" + JSON.stringify(resultObj));
+        if (resultObj != undefined && resultObj) {
+          switch (resultObj.floorNumber + "") {
+            case '-1':
+              resultObj.floorNumber = "Lower Ground Floor";
+              break;
+            case '0':
+              resultObj.floorNumber = "Ground Floor";
+              break;
+            case '1':
+              resultObj.floorNumber = "First Floor";
+              break;
+            case '2':
+              resultObj.floorNumber = "Second Floor";
+              break;
+            default:
+              break;
           }
         }
 
-        if(resultObj!=undefined && resultObj)
-        {
+        if (resultObj != undefined && resultObj) {
 
-          if(rows[1]!=undefined){
-            resultObj.tagsArray=rows[1];
+          if (rows[1] != undefined) {
+            resultObj.tagsArray = rows[1];
           }
-          if(rows[2]!=undefined){
-            resultObj.relatedBrandsArray=rows[2];
+          if (rows[2] != undefined) {
+            resultObj.relatedBrandsArray = rows[2];
           }
-          if(rows[3]!=undefined){
-            resultObj.offersArray=rows[3];
+          if (rows[3] != undefined) {
+            resultObj.offersArray = rows[3];
           }
-          if(rows[4]!=undefined){
-            resultObj.outletDetails=rows[4];
+          if (rows[4] != undefined) {
+            resultObj.outletDetails = rows[4];
           }
 
 
         }
-        else{
-          resultObj={};
-          resultObj=rows[4][0];
-          resultObj.genderCodeString="";
+        else {
+          resultObj = {};
+          resultObj = rows[4][0];
+          resultObj.genderCodeString = "";
 
-          resultObj.tagsArray=[];
-          resultObj.relatedBrandsArray=[];
-          resultObj.offersArray=[];
-          console.log("getOutletDetails : floorNumber "+resultObj.floorNumber);
-          switch(resultObj.floorNumber+"")
-          {
-            case '-1': resultObj.floorNumber="Lower Ground Floor"; break;
-            case '0':  resultObj.floorNumber="Ground Floor";       break;
-            case '1':  resultObj.floorNumber="First Floor";        break;
-            case '2':  resultObj.floorNumber="Second Floor";       break;
-            default: break;
+          resultObj.tagsArray = [];
+          resultObj.relatedBrandsArray = [];
+          resultObj.offersArray = [];
+          console.log("getOutletDetails : floorNumber " + resultObj.floorNumber);
+          switch (resultObj.floorNumber + "") {
+            case '-1':
+              resultObj.floorNumber = "Lower Ground Floor";
+              break;
+            case '0':
+              resultObj.floorNumber = "Ground Floor";
+              break;
+            case '1':
+              resultObj.floorNumber = "First Floor";
+              break;
+            case '2':
+              resultObj.floorNumber = "Second Floor";
+              break;
+            default:
+              break;
           }
         }
-        console.log("getOutletDetails test : final "+JSON.stringify(resultObj));
+        console.log("getOutletDetails test : final " + JSON.stringify(resultObj));
         UserFavorite
-          .find({select:['userID','outletID']})
-          .where({'userID':userId , 'outletID':id})// amongst these outlets , find the ones selected as Favourite by this user
+          .find({select: ['userID', 'outletID']})
+          .where({'userID': userId, 'outletID': id})// amongst these outlets , find the ones selected as Favourite by this user
           .exec(function (err, userFavoriteArray) {
             //console.log("getOutletDetails test : final2 "+JSON.stringify(userFavoriteArray));
-            if(userFavoriteArray.length >0)
+            if (userFavoriteArray.length > 0)
               resultObj.isFavorite = true;
             else
               resultObj.isFavorite = false;
@@ -631,10 +752,10 @@ module.exports = {
 
 
       }
-      else{
-        console.log('Error while performing Query.'+err);
+      else {
+        console.log('Error while performing Query.' + err);
         res.setHeader('Content-Type', 'text/html');
-        res.send(err );
+        res.send(err);
       }
     });
   },
@@ -642,61 +763,66 @@ module.exports = {
 
   //getRelatedBrandOutlets
 
-  getOutletsForQuery : function(req, res, connection) {
+  getOutletsForQuery: function (req, res, connection) {
     // Required variables : [ query , userid ]
     // Optional variables : [ favorite=true , sale=true ,  ]
     // Currently optional should be required : []
 
     var query = req.query.q,
       userId = req.query.userid;
-    if(userId==undefined) userId = 6;
+    if (userId == undefined) userId = 6;
     var callProcedureString = "";
-    console.log("values- query "+query);
+    console.log("values- query " + query);
 
 
-    if(query!=undefined){
-      callProcedureString = "CALL `getOutletsByQuery` ( '"+userId+"' , '"+query+"'  );" ;
+    if (query != undefined) {
+      callProcedureString = "CALL `getOutletsByQuery` ( '" + userId + "' , '" + query + "'  );";
     }
     else {            //2b ) /getOutlets?id=20&type=category
-      if(type=="category"){
-        if (id.indexOf(',') == -1)
-        {
-          callProcedureString= "CALL `getOutletsByTagId` ( '"+userId+"' , '"+id+"' );" ;
+      if (type == "category") {
+        if (id.indexOf(',') == -1) {
+          callProcedureString = "CALL `getOutletsByTagId` ( '" + userId + "' , '" + id + "' );";
         }
-        else
-        {
-          callProcedureString= " CALL `getOutletsByTagIdArray` ( '"+userId+"' , '"+id+"' );" ;
+        else {
+          callProcedureString = " CALL `getOutletsByTagIdArray` ( '" + userId + "' , '" + id + "' );";
         }
       }
-      else{
-        callProcedureString= " CALL `getOutletsByTagId` ( '"+userId+"' , 0 );" ;
+      else {
+        callProcedureString = " CALL `getOutletsByTagId` ( '" + userId + "' , 0 );";
       }
     }
-    Brand.query(callProcedureString, function(err, rows, fields) {
+    Brand.query(callProcedureString, function (err, rows, fields) {
       console.log("returned");
-      if (!err)
-      {
+      if (!err) {
         console.log('The solution is: ', rows[0]);
         var result = rows[0];
         for (index = 0; index < result.length; ++index) {
-          switch(result[index].floorNumber+"")
-          {
-            case '-1': result[index].floorNumber="Lower Ground Floor"; break;
-            case '0':  result[index].floorNumber="Ground Floor";       break;
-            case '1':  result[index].floorNumber="First Floor";        break;
-            case '2':  result[index].floorNumber="Second Floor";       break;
-            default: break;
+          switch (result[index].floorNumber + "") {
+            case '-1':
+              result[index].floorNumber = "Lower Ground Floor";
+              break;
+            case '0':
+              result[index].floorNumber = "Ground Floor";
+              break;
+            case '1':
+              result[index].floorNumber = "First Floor";
+              break;
+            case '2':
+              result[index].floorNumber = "Second Floor";
+              break;
+            default:
+              break;
           }
           //console.log("rows[index].floorNumber : "+rows[index].floorNumber);
         }
         res.json(result);
       }
-      else{
-        console.log('Error while performing Query.'+err);
-        console.log('Query value:'+query + "and id : "+id);
-        console.log('callProcedureString:'+callProcedureString);
+      else {
+        console.log('Error while performing Query.' + err);
+        console.log('Query value:' + query + "and id : " + id);
+        console.log('callProcedureString:' + callProcedureString);
         res.setHeader('Content-Type', 'text/html');
-        res.send(err );
+        res.send(err);
       }
     });
   },
@@ -1067,15 +1193,18 @@ module.exports = {
                 return staticAveragePricesArray;
               });
 
-            return [outletArray , staticAveragePricesArray]
+            return [outletArray, staticAveragePricesArray]
           })
-          .spread(function(outletArray ,staticAveragePricesArray ){
-            if(err){ console.log("Error inside"+err); res.json({error:err}); }
+          .spread(function (outletArray, staticAveragePricesArray) {
+            if (err) {
+              console.log("Error inside" + err);
+              res.json({error: err});
+            }
 
-            console.log("outletArray:"+JSON.stringify(outletArray));
-            console.log("staticAveragePricesArray:"+JSON.stringify(staticAveragePricesArray));
+            console.log("outletArray:" + JSON.stringify(outletArray));
+            console.log("staticAveragePricesArray:" + JSON.stringify(staticAveragePricesArray));
 
-            function getResultObject(obj){
+            function getResultObject(obj) {
               // Condition to find "isOnSale"
               // 1. offers array should not be empty or undefined
               // 2. Every offer should be active . i.e. every offer object's active property should be 'true'
@@ -1084,57 +1213,69 @@ module.exports = {
               // Calculate avgPrice for the prominentTagID if present
               // 1. Check if prominentTagID is present
               // 2. Check if this brandID and this tagID is present in staticAveragePricesArray
-              var avgPrice="";
-              if(obj.prominentTagID !=undefined) {
-                avgPrice= _.result( _.find(staticAveragePricesArray , {'brandID':obj.ownedByBrandID.brandID , 'tagID':obj.prominentTagID.tagID}) , 'avgPrice');
+              var avgPrice = "";
+              if (obj.prominentTagID != undefined) {
+                avgPrice = _.result(_.find(staticAveragePricesArray, {
+                  'brandID': obj.ownedByBrandID.brandID,
+                  'tagID': obj.prominentTagID.tagID
+                }), 'avgPrice');
               }
-              var returnValue="";
-              switch(obj.floorNumber+""){
-                case '-1': returnValue = "Lower ground floor"; break;
-                case '0': returnValue = "Ground floor";break;
-                case '1': returnValue = "First floor";break;
-                case '2': returnValue = "Second floor";break;
-                default : returnValue = "";break;
+              var returnValue = "";
+              switch (obj.floorNumber + "") {
+                case '-1':
+                  returnValue = "Lower ground floor";
+                  break;
+                case '0':
+                  returnValue = "Ground floor";
+                  break;
+                case '1':
+                  returnValue = "First floor";
+                  break;
+                case '2':
+                  returnValue = "Second floor";
+                  break;
+                default :
+                  returnValue = "";
+                  break;
               }
               obj.floorNumber = returnValue;
 
 
               return {
-                outletName:obj.outletName,
-                imageUrl : obj.ownedByBrandID.imageUrl,
-                ratingValue : obj.ratingValue ,
-                phoneNumber : obj.phoneNumber,
-                emailId :obj.emailId,
-                floorNumber : obj.floorNumber ,
+                outletName: obj.outletName,
+                imageUrl: obj.ownedByBrandID.imageUrl,
+                ratingValue: obj.ratingValue,
+                phoneNumber: obj.phoneNumber,
+                emailId: obj.emailId,
+                floorNumber: obj.floorNumber,
                 outletID: obj.outletID,
-                tagName : (obj.prominentTagID !=undefined  ? obj.prominentTagID.tagName: ""),
-                genderCodeString : obj.ownedByBrandID.genderCodeString ,
-                hubName : obj.hubID.hubName ,
-                isOnSale : ( (obj.offers.length!=0 && _.contains(_.pluck(obj.offers , 'active') ,true ) ) ? true :false ),
-                isFavorite:true,
-                avgPrice:avgPrice
+                tagName: (obj.prominentTagID != undefined ? obj.prominentTagID.tagName : ""),
+                genderCodeString: obj.ownedByBrandID.genderCodeString,
+                hubName: obj.hubID.hubName,
+                isOnSale: ( (obj.offers.length != 0 && _.contains(_.pluck(obj.offers, 'active'), true) ) ? true : false ),
+                isFavorite: true,
+                avgPrice: avgPrice
               };
             }
 
-            var resultArray = _.map(outletArray , getResultObject );
-            console.log("result:"+JSON.stringify (resultArray ));
+            var resultArray = _.map(outletArray, getResultObject);
+            console.log("result:" + JSON.stringify(resultArray));
 
             res.json(resultArray);
 
           })
-          .catch(function(err) {
+          .catch(function (err) {
             if (err) {
               return res.serverError(err);
             }
           });
 
 
-
       });
 
   },
 
-  getAllOnSaleOutlets : function(req,res,connection){
+  getAllOnSaleOutlets: function (req, res, connection) {
     // input : userID
     var userid = req.query.userid;
 
@@ -1142,42 +1283,48 @@ module.exports = {
     // Logic : From Offer table, fetch the whole list of outletIDs , inner join it with the outlet table
 
     Offer
-      .find({select:['outletID']})
+      .find({select: ['outletID']})
       .where({active: true})
       .exec(function (err, outletIdObjectArray) {
-        if(err){ console.log("Error:"+err);return;   }
+        if (err) {
+          console.log("Error:" + err);
+          return;
+        }
 
-        var outletIdArray=_.pluck(outletIdObjectArray,'outletID'); // using LoDash
+        var outletIdArray = _.pluck(outletIdObjectArray, 'outletID'); // using LoDash
 
 
         Outlet
-          .find({outletID:outletIdArray})
+          .find({outletID: outletIdArray})
           .populateAll()
-          .then(function(outletArray){
+          .then(function (outletArray) {
 
             var staticAveragePricesArray = StaticAveragePrices
-              .find({select:['brandID','tagID','avgPrice']})
-              .where({brandID: _.pluck(_.pluck(outletArray,'ownedByBrandID'),'brandID')})
+              .find({select: ['brandID', 'tagID', 'avgPrice']})
+              .where({brandID: _.pluck(_.pluck(outletArray, 'ownedByBrandID'), 'brandID')})
               .then(function (staticAveragePricesArray) {
                 return staticAveragePricesArray;
               });
             var userFavoriteArray = UserFavorite
-              .find({select:['userID','outletID']})
-              .where({'userID':userid , 'outletID':outletIdArray})// amongst these outlets , find the ones selected as Favourite by this user
+              .find({select: ['userID', 'outletID']})
+              .where({'userID': userid, 'outletID': outletIdArray})// amongst these outlets , find the ones selected as Favourite by this user
               .then(function (userFavoriteArray) {
                 return userFavoriteArray;
               });
 
-            return [outletArray , staticAveragePricesArray , userFavoriteArray]
+            return [outletArray, staticAveragePricesArray, userFavoriteArray]
           })
-          .spread(function(outletArray ,staticAveragePricesArray , userFavoriteArray){
-            if(err){ console.log("Error inside"+err); res.json({error:err}); }
+          .spread(function (outletArray, staticAveragePricesArray, userFavoriteArray) {
+            if (err) {
+              console.log("Error inside" + err);
+              res.json({error: err});
+            }
 
-            console.log("outletArray:"+JSON.stringify(outletArray));
-            console.log("staticAveragePricesArray:"+JSON.stringify(staticAveragePricesArray));
-            console.log("userFavoriteArray:"+JSON.stringify(userFavoriteArray));
+            console.log("outletArray:" + JSON.stringify(outletArray));
+            console.log("staticAveragePricesArray:" + JSON.stringify(staticAveragePricesArray));
+            console.log("userFavoriteArray:" + JSON.stringify(userFavoriteArray));
 
-            function getResultObject(obj){
+            function getResultObject(obj) {
               // Condition to find "isOnSale"
               // 1. offers array should not be empty or undefined
               // 2. Every offer should be active . i.e. every offer object's active property should be 'true'
@@ -1186,51 +1333,56 @@ module.exports = {
               // Calculate avgPrice for the prominentTagID if present
               // 1. Check if prominentTagID is present
               // 2. Check if this brandID and this tagID is present in staticAveragePricesArray
-              var avgPrice="";
-              if(obj.prominentTagID !=undefined) {
-                avgPrice= _.result( _.find(staticAveragePricesArray , {'brandID':obj.ownedByBrandID.brandID , 'tagID':obj.prominentTagID.tagID}) , 'avgPrice');
+              var avgPrice = "";
+              if (obj.prominentTagID != undefined) {
+                avgPrice = _.result(_.find(staticAveragePricesArray, {
+                  'brandID': obj.ownedByBrandID.brandID,
+                  'tagID': obj.prominentTagID.tagID
+                }), 'avgPrice');
               }
 
-              var isFavorite=false;
-              if( _.find(userFavoriteArray , { 'outletID' : obj.outletID}) !=undefined ){   isFavorite = true;   }
-              else { isFavorite = false;  }
+              var isFavorite = false;
+              if (_.find(userFavoriteArray, {'outletID': obj.outletID}) != undefined) {
+                isFavorite = true;
+              }
+              else {
+                isFavorite = false;
+              }
 
 
               return {
-                outletName:obj.outletName,
-                imageUrl : obj.ownedByBrandID.imageUrl,
-                ratingValue : obj.ratingValue ,
-                phoneNumber : obj.phoneNumber,
-                emailId :obj.emailId,
-                floorNumber : obj.floorNumber ,
+                outletName: obj.outletName,
+                imageUrl: obj.ownedByBrandID.imageUrl,
+                ratingValue: obj.ratingValue,
+                phoneNumber: obj.phoneNumber,
+                emailId: obj.emailId,
+                floorNumber: obj.floorNumber,
                 outletID: obj.outletID,
-                tagName : (obj.prominentTagID !=undefined  ? obj.prominentTagID.tagName: ""),
-                genderCodeString : obj.ownedByBrandID.genderCodeString ,
-                hubName : obj.hubID.hubName ,
-                isOnSale : true,
-                isFavorite:isFavorite,
-                avgPrice:avgPrice
+                tagName: (obj.prominentTagID != undefined ? obj.prominentTagID.tagName : ""),
+                genderCodeString: obj.ownedByBrandID.genderCodeString,
+                hubName: obj.hubID.hubName,
+                isOnSale: true,
+                isFavorite: isFavorite,
+                avgPrice: avgPrice
               };
             }
 
-            var resultArray = _.map(outletArray , getResultObject );
-            console.log("result:"+JSON.stringify (resultArray ));
+            var resultArray = _.map(outletArray, getResultObject);
+            console.log("result:" + JSON.stringify(resultArray));
 
             res.json(resultArray);
 
           })
-          .catch(function(err) {
+          .catch(function (err) {
             if (err) {
               return res.serverError(err);
             }
           });
 
 
-
       });
 
   },
-
 
 
   /*
@@ -1262,33 +1414,39 @@ module.exports = {
 
 
 
-  setFavoriteOutlet : function(req,res,connection){
+  setFavoriteOutlet: function (req, res, connection) {
     // Required variables : [ (query) , (id,type=category) , (id[],type=category) ]
     // Optional variables : [ favorite=true , sale=true ,  ]
     // Currently optional should be required : [userid]
 
-    var userID = req.query.userid ,
-      outletID  = req.query.outletid,
-      toBeSet = (req.query.set==='true');
+    var userID = req.query.userid,
+      outletID = req.query.outletid,
+      toBeSet = (req.query.set === 'true');
 
-    if(toBeSet == undefined){
-      res.send({"Error":"The key 'set' is not sent as a parameter"});
+    if (toBeSet == undefined) {
+      res.send({"Error": "The key 'set' is not sent as a parameter"});
     }
 
-    if(toBeSet ==  true){
+    if (toBeSet == true) {
       UserFavorite
-        .findOrCreate({'userID':userID,outletID:outletID})
-        .exec(function (err,created) {
-          if(err){res.send(err); return;}
-          console.log("created:"+created);
+        .findOrCreate({'userID': userID, outletID: outletID})
+        .exec(function (err, created) {
+          if (err) {
+            res.send(err);
+            return;
+          }
+          console.log("created:" + created);
           res.json(created);
         });
-    }else if(toBeSet ==false){
+    } else if (toBeSet == false) {
       UserFavorite
-        .destroy({'userID':userID,outletID:outletID})
-        .exec(function (err,deleted) {
-          if(err){res.send(err); return;}
-          console.log("deleted:"+JSON.stringify(deleted[0]));
+        .destroy({'userID': userID, outletID: outletID})
+        .exec(function (err, deleted) {
+          if (err) {
+            res.send(err);
+            return;
+          }
+          console.log("deleted:" + JSON.stringify(deleted[0]));
           res.json();
         });
     }
@@ -1296,21 +1454,24 @@ module.exports = {
 
   },
 
-  updateRegID : function(req,res,connection){
+  updateRegID: function (req, res, connection) {
     //Required variables : userid , regid
 
-    var userID = req.query.userid ,
-      regID  = req.query.regid;
+    var userID = req.query.userid,
+      regID = req.query.regid;
 
-    User.update({userID:userID},{regid:regID}).exec(function (err,updated) {
-      if(err){ console.log("Error"+err); res.send(err);     }
-      console.log("Updated"+JSON.stringify(updated));
+    User.update({userID: userID}, {regid: regID}).exec(function (err, updated) {
+      if (err) {
+        console.log("Error" + err);
+        res.send(err);
+      }
+      console.log("Updated" + JSON.stringify(updated));
       res.json(updated);
     })
 
   },
 
-  sendNotificationToAndroid : function (req,res,connection){
+  sendNotificationToAndroid: function (req, res, connection) {
     var msgValue = req.query.msg;
 
     var gcm = require('node-gcm');
@@ -1326,7 +1487,7 @@ module.exports = {
 
 //Now the sender can be used to send messages
     sender.send(message, regIds, function (err, result) {
-      if(err){
+      if (err) {
         console.error(err);
         res.send(err);
         return;
@@ -1390,10 +1551,6 @@ module.exports = {
 
 
   }
-
-
-
-
 
 
 };
