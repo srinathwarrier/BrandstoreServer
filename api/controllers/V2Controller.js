@@ -1306,6 +1306,42 @@ module.exports = {
     //});
 
 
+  },
+
+  forgotPassword : function(req,res,connection){
+
+  },
+
+  signup :function (req,res, connection){
+
+    //"firstName="+firstName+"&emailid="+emailId+"&password="+password,
+
+    var firstName = req.query.firstname ,
+      emailId  = req.query.emailid,
+      password  = req.query.password,
+      genderCode = req.query.gendercode;
+
+    User
+      .create({
+        userRoleID : 1,
+        firstName:firstName,
+        emailid:emailId,
+        password:password,
+        genderCode : genderCode
+    }).exec(function(err,created){
+      if(err){
+        console.log('Error in creating interaction:' + JSON.stringify(err));
+        res.json(err);
+      }
+      else{
+        console.log('Created interaction:' + JSON.stringify(created));
+        res.json(created);
+      }
+    });
+
+
+
+
   }
 
 

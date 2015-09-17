@@ -68,7 +68,9 @@ module.exports.routes = {
   'get /v2/getOutletsForTagId' : 'V2Controller.getOutletsForTagId',
   'get /v2/setFavoriteOutlet' : 'V2Controller.setFavoriteOutlet',
   'get /v2/updateRegID' : 'V2Controller.updateRegID',
-  'get /v2/sendNotificationToAndroid' : 'V2Controller.sendNotificationToAndroid'
+  'get /v2/sendNotificationToAndroid' : 'V2Controller.sendNotificationToAndroid',
+  'get /v2/forgotPassword' : 'V2Controller.forgotPassword',
+  'get /v2/signup' : 'V2Controller.signup',
 
 
 
