@@ -1342,6 +1342,9 @@ module.exports = {
                   'brandID': obj.ownedByBrandID.brandID,
                   'tagID': obj.prominentTagID.tagID
                 }), 'avgPrice');
+                if(avgPrice==undefined){
+                  avgPrice="";
+                }
               }
 
               var isFavorite = false;
