@@ -23,8 +23,9 @@ module.exports = {
       type: 'integer',
       index: true
     },
-    userName : {
-      type: 'text'
+    name : {
+      type: 'string',
+      size:50
     },
     emailid : {
       type:'string',
@@ -34,20 +35,11 @@ module.exports = {
       type:'string',
       size:50
     },
-    firstName : {
-      type: 'text'
-    },
-    middleName : {
-      type: 'text'
-    },
-    lastName : {
-      type: 'text'
-    },
-    nickname : {
-      type: 'text'
-    },
     genderCode : {
       type: 'text'
+    },
+    dob:{
+      type:'date'
     },
     regid:{
       type:'string',
@@ -76,6 +68,12 @@ module.exports = {
     favorites:{
       collection:'UserFavorite',
       via:'userID'
+    },
+    // Override toJSON method to remove password from API
+    toJSON: function() {
+      var obj = this.toObject();
+      delete obj.password;
+      return obj;
     }
   }
 };
