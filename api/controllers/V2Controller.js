@@ -213,18 +213,25 @@ module.exports = {
 
 
     Outlet
-      .find({select: ['outletID', 'outletName']})
+      .find({select: ['outletID', 'outletName','active']})
       .where({outletName: {contains: param}})
-      .where({active: true})
+      //.where({active: true})
       .sort('outletName')
       .then(function (outletArray) {
         // prepare the outletArray
         for (var outletIndex in outletArray) {
-          outletArray[outletIndex].type = "outlet";
+          if(outletArray[outletIndex].active){
+            outletArray[outletIndex].type = "outlet";
+          }
+          else{
+            outletArray[outletIndex].type = "others";
+          }
+          //outletArray[outletIndex].type = "outlet";
           outletArray[outletIndex].name = outletArray[outletIndex].outletName;
           outletArray[outletIndex].Id = outletArray[outletIndex].outletID;
           delete outletArray[outletIndex].outletID;
           delete outletArray[outletIndex].outletName;
+          delete outletArray[outletIndex].active;
         }
 
         // get hubArray and prepare
