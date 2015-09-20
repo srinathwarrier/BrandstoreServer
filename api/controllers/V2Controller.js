@@ -155,7 +155,7 @@ function getSameFloorOppositeSidesTemplate1 (fromOutletname, exitBridgeDir, pend
 function getSameFloorOppositeSidesTemplate2 (fromOutletname, toOutletName) {
   //the from outlet has a bridge right in front of it and the destination outlet is right on the other side of the bridge
   return [
-    'Exit "' + fromOutletname + '" and take a the bridge Ahead',
+    'Exit "' + fromOutletname + '" and take the bridge Ahead',
     'Cross the bridge and your destination ' + toOutletName + ' should be straight ahead '
   ];
 }
@@ -1031,13 +1031,13 @@ module.exports = {
                         //the destination outlet is on the left after exiting the bridge
                         // exitBridgeDirection = "left"
                         returnValue = getSameFloorOppositeSidesTemplate1(
-                          name1, "left", Math.abs(leftPointer - Math.abs(pointer2)), name2);
+                          name1, "left", Math.abs(leftPointer - Math.abs(pointer2)), name2,"right");
                       }
                       else if (rightPointer > pointer2) {
                         //the destination outlet is on the right after exiting the bridge
                         //exitBridgeDirection = "right"
                         returnValue = getSameFloorOppositeSidesTemplate1(
-                          name1, "right", Math.abs(Math.abs(pointer2) - rightPointer), name2);
+                          name1, "right", Math.abs(Math.abs(pointer2) - rightPointer), name2,"left");
                       }
                       else if ((pointer2 < leftPointer && pointer2 > rightPointer)||pointer2 == leftPointer || pointer2 < rightPointer) {
                         //the destination is on the opposite end of the bridge
@@ -1144,7 +1144,7 @@ module.exports = {
                       }
                     }
                     returnValue = getSameFloorOppositeSidesTemplate3(
-                      name1, exitDir, outletsBetweenFromAndBridge, exitBridgeDir, Math.abs(outletsBetweenBridgeAndTo), name2, destinationDir);
+                      name1, exitDir, Math.abs(outletsBetweenFromAndBridge), exitBridgeDir, Math.abs(outletsBetweenBridgeAndTo), name2, destinationDir);
                   }
                 }
                 console.log("returnValue:" + returnValue);
