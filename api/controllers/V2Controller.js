@@ -1505,7 +1505,7 @@ module.exports = {
     sender.send(message, regIds, function (err, result) {
       if (err) {
         console.error(err);
-        res.send(err);
+        res.json(err);
         return;
       }
       console.log(result);
