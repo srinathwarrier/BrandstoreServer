@@ -111,33 +111,33 @@ module.exports = {
 
     var userID = req.query.userid,
       outletID = req.query.outletid,
-      toBeSet = (req.query.set === 'true');
+      toBeSet = ( (req.query.set === 'true')?true : (req.query.set === 'true')?false:undefined );
 
     if (toBeSet == undefined) {
-      res.send({"Error": "The key 'set' is not sent as a parameter"});
+      res.json({responseState:"error","error": "The key 'set' is not sent as a parameter"});
+      return;
     }
-
-    if (toBeSet == true) {
+    else if (toBeSet == true) {
       UserFavorite
         .findOrCreate({'userID': userID, outletID: outletID})
         .exec(function (err, created) {
           if (err) {
-            res.send(err);
+            res.json({responseState:"error",error:err});
             return;
           }
           console.log("created:" + created);
-          res.json(created);
+          res.json({responseState:"success",created:created});
         });
     } else if (toBeSet == false) {
       UserFavorite
         .destroy({'userID': userID, outletID: outletID})
         .exec(function (err, deleted) {
           if (err) {
-            res.send(err);
+            res.json({responseState:"error",error:err});
             return;
           }
           console.log("deleted:" + JSON.stringify(deleted[0]));
-          res.json();
+          res.json({responseState:"success",deleted:deleted});
         });
     }
 
