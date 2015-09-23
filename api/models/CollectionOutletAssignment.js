@@ -21,11 +21,13 @@ module.exports = {
     },
     collectionID  : {
       type: 'integer',
-      index: true
+      index: true,
+      model:'Collection'
     },
     outletID : {
       type: 'integer',
-      index: true
+      index: true,
+      model:'Outlet'
     },
     sortOrderIndex : {
       type: 'integer',

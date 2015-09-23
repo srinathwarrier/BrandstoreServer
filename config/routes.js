@@ -65,6 +65,7 @@ module.exports.routes = {
   /* Outlet list Routes */
   'get /v2/getOutlets':'v2/OutletListController.getOutlets',
   'get /v2/getAllFavoriteOutlets' : 'v2/OutletListController.getAllFavoriteOutlets',
+  'get /v2/getAllOnSaleOutlets' : 'v2/OutletListController.getAllOnSaleOutlets',
   'get /v2/getOutletsForTagId' : 'v2/OutletListController.getOutletsForTagId',
   'get /v2/getOutletsForCollectionId' : 'v2/OutletListController.getOutletsForCollectionId',
 

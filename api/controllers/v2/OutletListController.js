@@ -2,6 +2,87 @@
  * Created by I076324 on 9/23/2015.
  */
 
+function getFinalOutletArray(outletArray, theStaticAveragePricesArray, theUserFavoriteArray, isAllOnSale, isAllFavorite){
+  var staticAveragePricesArray = theStaticAveragePricesArray;
+  var userFavoriteArray = theUserFavoriteArray;
+
+  function getResultObject(obj) {
+    // Condition to find "isOnSale"
+    // 1. offers array should not be empty or undefined
+    // 2. Every offer should be active . i.e. every offer object's active property should be 'true'
+
+
+    // Calculate avgPrice for the prominentTagID if present
+    // 1. Check if prominentTagID is present
+    // 2. Check if this brandID and this tagID is present in staticAveragePricesArray
+    var avgPrice = "";
+    if (obj.prominentTagID != undefined) {
+      avgPrice = _.result(_.find(staticAveragePricesArray, {
+        'brandID': obj.ownedByBrandID.brandID,
+        'tagID': obj.prominentTagID.tagID
+      }), 'avgPrice');
+      if(avgPrice==undefined){
+        avgPrice="";
+      }
+    }
+
+    var returnValue = "";
+    switch (obj.floorNumber + "") {
+      case '-1':
+        returnValue = "Lower ground floor";
+        break;
+      case '0':
+        returnValue = "Ground floor";
+        break;
+      case '1':
+        returnValue = "First floor";
+        break;
+      case '2':
+        returnValue = "Second floor";
+        break;
+      default :
+        returnValue = "";
+        break;
+    }
+    obj.floorNumber = returnValue;
+
+    var isFavorite = false;
+    if(isAllFavorite){
+      isFavorite = true;
+    }
+    else{
+      if(_.find(userFavoriteArray, {'outletID': obj.outletID}) != undefined) { isFavorite = true;  }
+      else {  isFavorite = false; }
+    }
+
+    var isOnSale = false;
+    if(isAllOnSale){
+      isOnSale = true;
+    }
+    else{
+      isOnSale =( (obj.offers.length != 0 && _.contains(_.pluck(obj.offers, 'active'), true) ) ? true : false );
+    }
+
+    return {
+      outletName: obj.outletName,
+      imageUrl: obj.ownedByBrandID.imageUrl,
+      ratingValue: obj.ratingValue,
+      phoneNumber: obj.phoneNumber,
+      emailId: obj.emailId,
+      floorNumber: obj.floorNumber,
+      outletID: obj.outletID,
+      tagName: (obj.prominentTagID != undefined ? obj.prominentTagID.tagName : ""),
+      genderCodeString: obj.ownedByBrandID.genderCodeString,
+      hubName: obj.hubID.hubName,
+      isOnSale: isOnSale,
+      isFavorite: isFavorite,
+      avgPrice: avgPrice
+    };
+  }
+
+  return _.map(outletArray, getResultObject);
+
+}
 
 module.exports = {
 
@@ -131,25 +212,45 @@ module.exports = {
     Collection
       .find()
       .where({collectionID:collectionid})
-      .then(function(collectionArray){
+      .populateAll()
+      .exec(function (err, collectionArray) {
+        if (err) {
+          res.json(err);
+          return;
+        }
+        if(collectionArray.length==0){
+          res.json({Error:"Invalid collectionid"});
+          return;
+        }
 
-        CollectionOutletAssignment
-          .find()
-          .where()
-          .then(function(){
+        var outletIdArray = _.pluck(_.sortBy(collectionArray[0].outletAssignment, 'sortOrderIndex'), 'outletID');
 
+        Outlet
+          .find({outletID: outletIdArray})
+          .populateAll()
+          .then(function (outletArray) {
+
+            var staticAveragePricesArray = StaticAveragePrices
+              .find({select: ['brandID', 'tagID', 'avgPrice']})
+              .where({brandID: _.pluck(_.pluck(outletArray, 'ownedByBrandID'), 'brandID')})
+              .then(function (staticAveragePricesArray) {
+                return staticAveragePricesArray;
+              });
+            var userFavoriteArray = UserFavorite
+              .find({select: ['userID', 'outletID']})
+              .where({'userID': userId, 'outletID': outletIdArray})// amongst these outlets , find the ones selected as Favourite by this user
+              .then(function (userFavoriteArray) {
+                return userFavoriteArray;
+              });
+
+            return [outletArray, staticAveragePricesArray, userFavoriteArray]
+          })
+          .spread(function (outletArray, staticAveragePricesArray, userFavoriteArray) {
+            var resultArray = getFinalOutletArray(outletArray, staticAveragePricesArray , userFavoriteArray , false , false);
+            res.json(resultArray);
           });
 
-
-        return [collectionArray];
-      })
-      .spread(function(collectionArray){
-        res.json(collectionArray);
-      })
-      .catch(function (err) {
-        res.send(err);
       });
-
 
   },
 
@@ -248,6 +349,118 @@ module.exports = {
                 hubName: obj.hubID.hubName,
                 isOnSale: ( (obj.offers.length != 0 && _.contains(_.pluck(obj.offers, 'active'), true) ) ? true : false ),
                 isFavorite: true,
+                avgPrice: avgPrice
+              };
+            }
+
+            var resultArray = _.map(outletArray, getResultObject);
+            console.log("result:" + JSON.stringify(resultArray));
+
+            res.json(resultArray);
+
+          })
+          .catch(function (err) {
+            if (err) {
+              return res.serverError(err);
+            }
+          });
+
+
+      });
+
+  },
+
+  getAllOnSaleOutlets: function (req, res, connection) {
+    // input : userID
+    var userid = req.query.userid;
+
+    // output : outletArray
+    // Logic : From Offer table, fetch the whole list of outletIDs , inner join it with the outlet table
+
+    Offer
+      .find({select: ['outletID']})
+      .where({active: true})
+      .exec(function (err, outletIdObjectArray) {
+        if (err) {
+          console.log("Error:" + err);
+          return;
+        }
+
+        var outletIdArray = _.pluck(outletIdObjectArray, 'outletID'); // using LoDash
+
+
+        Outlet
+          .find({outletID: outletIdArray})
+          .populateAll()
+          .then(function (outletArray) {
+
+            var staticAveragePricesArray = StaticAveragePrices
+              .find({select: ['brandID', 'tagID', 'avgPrice']})
+              .where({brandID: _.pluck(_.pluck(outletArray, 'ownedByBrandID'), 'brandID')})
+              .then(function (staticAveragePricesArray) {
+                return staticAveragePricesArray;
+              });
+            var userFavoriteArray = UserFavorite
+              .find({select: ['userID', 'outletID']})
+              .where({'userID': userid, 'outletID': outletIdArray})// amongst these outlets , find the ones selected as Favourite by this user
+              .then(function (userFavoriteArray) {
+                return userFavoriteArray;
+              });
+
+            return [outletArray, staticAveragePricesArray, userFavoriteArray]
+          })
+          .spread(function (outletArray, staticAveragePricesArray, userFavoriteArray) {
+            if (err) {
+              console.log("Error inside" + err);
+              res.json({error: err});
+            }
+
+            console.log("outletArray:" + JSON.stringify(outletArray));
+            console.log("staticAveragePricesArray:" + JSON.stringify(staticAveragePricesArray));
+            console.log("userFavoriteArray:" + JSON.stringify(userFavoriteArray));
+
+            function getResultObject(obj) {
+              // Condition to find "isOnSale"
+              // 1. offers array should not be empty or undefined
+              // 2. Every offer should be active . i.e. every offer object's active property should be 'true'
+
+
+              // Calculate avgPrice for the prominentTagID if present
+              // 1. Check if prominentTagID is present
+              // 2. Check if this brandID and this tagID is present in staticAveragePricesArray
+              var avgPrice = "";
+              if (obj.prominentTagID != undefined) {
+                avgPrice = _.result(_.find(staticAveragePricesArray, {
+                  'brandID': obj.ownedByBrandID.brandID,
+                  'tagID': obj.prominentTagID.tagID
+                }), 'avgPrice');
+                if(avgPrice==undefined){
+                  avgPrice="";
+                }
+              }
+
+              var isFavorite = false;
+              if (_.find(userFavoriteArray, {'outletID': obj.outletID}) != undefined) {
+                isFavorite = true;
+              }
+              else {
+                isFavorite = false;
+              }
+
+
+              return {
+                outletName: obj.outletName,
+                imageUrl: obj.ownedByBrandID.imageUrl,
+                ratingValue: obj.ratingValue,
+                phoneNumber: obj.phoneNumber,
+                emailId: obj.emailId,
+                floorNumber: obj.floorNumber,
+                outletID: obj.outletID,
+                tagName: (obj.prominentTagID != undefined ? obj.prominentTagID.tagName : ""),
+                genderCodeString: obj.ownedByBrandID.genderCodeString,
+                hubName: obj.hubID.hubName,
+                isOnSale: true,
+                isFavorite: isFavorite,
                 avgPrice: avgPrice
               };
             }
@@ -370,158 +583,6 @@ module.exports = {
             res.send(err);
           });
 
-
-        /*        Outlet
-         .find({outletID:_.pluck(rows[0],'outletID')})
-         .populateAll()
-         .then(function (outletArray) {
-         console.log("inside");
-         var userFavoriteArray = UserFavorite
-         .find({select:['userID','outletID']})
-         .where({'userID':userId , 'outletID':_.pluck(rows[0],'outletID')})// amongst these outlets , find the ones selected as Favourite by this user
-         .then(function (userFavoriteArray) {
-         return userFavoriteArray;
-         });
-
-         var isOnSaleArray = Offer
-         .find({select:['outletID','active','offerID']})
-         .where({outletID:_.pluck(rows[0],'outletID') , active:true})  // find active offers for these outlets
-         .then(function (offerArray) {
-         return offerArray;
-         });
-         return [outletArray, userFavoriteArray , isOnSaleArray];
-         })
-         .spread(function (outletArray , userFavoriteArray , isOnSaleArray) {
-         console.log("userFavoriteArray:"+JSON.stringify (userFavoriteArray ));
-         console.log("isOnSaleArray:"+JSON.stringify (isOnSaleArray ));
-
-         <<<<<<< HEAD
-         /*        Outlet
-         .find({outletID:_.pluck(rows[0],'outletID')})
-         .populateAll()
-         .then(function (outletArray) {
-         console.log("inside");
-         var userFavoriteArray = UserFavorite
-         .find({select:['userID','outletID']})
-         .where({'userID':userId , 'outletID':_.pluck(rows[0],'outletID')})// amongst these outlets , find the ones selected as Favourite by this user
-         .then(function (userFavoriteArray) {
-         return userFavoriteArray;
-         });
-
-         var isOnSaleArray = Offer
-         .find({select:['outletID','active','offerID']})
-         .where({outletID:_.pluck(rows[0],'outletID') , active:true})  // find active offers for these outlets
-         .then(function (offerArray) {
-         return offerArray;
-         });
-         return [outletArray, userFavoriteArray , isOnSaleArray];
-         })
-         .spread(function (outletArray , userFavoriteArray , isOnSaleArray) {
-         console.log("userFavoriteArray:"+JSON.stringify (userFavoriteArray ));
-         console.log("isOnSaleArray:"+JSON.stringify (isOnSaleArray ));
-
-         // Add isFavorite to resultArray
-         // Add isOnSale to resultArray
-
-         function getResultObject(obj){
-
-         // Change values
-
-         var returnValue="";
-         switch(obj.floorNumber){
-         case '-1': returnValue = "Lower ground floor"; break;
-         case '0': returnValue = "Ground floor";break;
-         case '1': returnValue = "First floor";break;
-         case '2': returnValue = "Second floor";break;
-         default : returnValue = "";break;
-         }
-         obj.floorNumber = returnValue;
-         obj.hubName = obj.hubID.hubName;
-
-         // Check if isOnSaleArray has any objects for this outletID
-         if( _.find(isOnSaleArray , { 'outletID' : obj.outletID}) ){
-         obj.isOnSale = true;
-         }else{
-         obj.isOnSale = false;
-         }
-
-         console.log("outletID:"+obj.outletID +" and "+ (_.find(userFavoriteArray , { 'outletID' : obj.outletID})!=undefined) );
-         // Check if userFavoriteArray has any objects for this outletID
-         if( _.find(userFavoriteArray , { 'outletID' : obj.outletID}) !=undefined ){
-         obj.isFavorite = true;
-         }else{
-         obj.isFavorite = false;
-         }
-
-         // Add new columns
-         =======
-         // Add isFavorite to resultArray
-         // Add isOnSale to resultArray
-
-         function getResultObject(obj){
-
-         // Change values
-
-         var returnValue="";
-         switch(obj.floorNumber){
-         case '-1': returnValue = "Lower ground floor"; break;
-         case '0': returnValue = "Ground floor";break;
-         case '1': returnValue = "First floor";break;
-         case '2': returnValue = "Second floor";break;
-         default : returnValue = "";break;
-         }
-         obj.floorNumber = returnValue;
-         obj.hubName = obj.hubID.hubName;
-
-         // Check if isOnSaleArray has any objects for this outletID
-         if( _.find(isOnSaleArray , { 'outletID' : obj.outletID}) ){
-         obj.isOnSale = true;
-         }else{
-         obj.isOnSale = false;
-         }
-
-         console.log("outletID:"+obj.outletID +" and "+ (_.find(userFavoriteArray , { 'outletID' : obj.outletID})!=undefined) );
-         // Check if userFavoriteArray has any objects for this outletID
-         if( _.find(userFavoriteArray , { 'outletID' : obj.outletID}) !=undefined ){
-         obj.isFavorite = true;
-         }else{
-         obj.isFavorite = false;
-         }
-
-         // Add new columns
-
-         >>>>>>> sumeetbranch
-
-         // delete old names from obj
-         delete obj.ownedByBrandID;
-         delete obj.hubID;
-
-         <<<<<<< HEAD
-         // delete old names from obj
-         delete obj.ownedByBrandID;
-         delete obj.hubID;
-         =======
-         >>>>>>> sumeetbranch
-
-
-
-
-
-         return obj;
-         }
-
-         <<<<<<< HEAD
-         return obj;
-         }
-
-         =======
-         >>>>>>> sumeetbranch
-         var resultArray = _.map(outletArray , getResultObject );
-
-         res.json(resultArray);
-         })
-         .catch();
-         */
       }
       else {
         console.log('Error while performing Query.' + err);

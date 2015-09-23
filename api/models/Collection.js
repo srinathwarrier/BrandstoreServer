@@ -26,6 +26,10 @@ module.exports = {
     active : {
       type: 'integer',
       defaultsTo: '1'
+    },
+    outletAssignment:{
+      collection:'CollectionOutletAssignment',
+      via:'collectionID'
     }
   }
 };
