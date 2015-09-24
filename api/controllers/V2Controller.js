@@ -31,64 +31,174 @@ function getFloorNameFromFloorNumber(index) {
   return returnValue;
 }
 
-function findTheClosestBridge(bridgesArray, sourcePointer, destinationPointer, outletArray) {
-  var closestBridgeOnLeft = bridgesArray[0];
-  var closestBridgeOnRight = bridgesArray[0];
+function calculateLeftRightClosestBridge(sourcePointer, pointer1, pointer2, pointer3, pointer4, bridgesArrayObject,outletArray,clBridgeOnLeft) {
+  var closestBridgeOnLeft = "";
+  var closestBridgeOnRight = "";
+  console.log("source pointer "+sourcePointer );
+  console.log(" pointer 1 "+pointer1 );
+  console.log(" pointer 2 "+pointer2 );
+  console.log(" pointer 3 "+pointer3 );
+  console.log(" pointer 4 "+pointer4 );
 
-  console.log("outlet array - "+JSON.stringify(outletArray));
-  console.log("bridges array - "+JSON.stringify(bridgesArray));
 
-  for (var x = 1; x < bridgesArray.length; x++) {
+  var clpointer1 = outletArray[_.findIndex(outletArray, {outletID: clBridgeOnLeft.nearbyOutlet1ID})].pointerValue;
+  var clpointer2 = outletArray[_.findIndex(outletArray, {outletID: clBridgeOnLeft.nearbyOutlet2ID})].pointerValue;
+  var clpointer3 = outletArray[_.findIndex(outletArray, {outletID: clBridgeOnLeft.nearbyOutlet3ID})].pointerValue;
+  var clpointer4 = outletArray[_.findIndex(outletArray, {outletID: clBridgeOnLeft.nearbyOutlet4ID})].pointerValue;
 
-    var pointer1 = outletArray[_.findIndex(outletArray, {outletID: bridgesArray[x].nearbyOutlet1ID})].pointerValue;
-    var pointer2 = outletArray[_.findIndex(outletArray, {outletID: bridgesArray[x].nearbyOutlet2ID})].pointerValue;
-    var pointer3 = outletArray[_.findIndex(outletArray, {outletID: bridgesArray[x].nearbyOutlet3ID})].pointerValue;
-    var pointer4 = outletArray[_.findIndex(outletArray, {outletID: bridgesArray[x].nearbyOutlet4ID})].pointerValue;
-
-    var clpointer1 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnLeft.nearbyOutlet1ID})].pointerValue;
-    var clpointer2 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnLeft.nearbyOutlet2ID})].pointerValue;
-    var clpointer3 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnLeft.nearbyOutlet3ID})].pointerValue;
-    var clpointer4 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnLeft.nearbyOutlet4ID})].pointerValue;
-
-    var crpointer1 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnRight.nearbyOutlet1ID})].pointerValue;
-    var crpointer2 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnRight.nearbyOutlet2ID})].pointerValue;
-    var crpointer3 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnRight.nearbyOutlet3ID})].pointerValue;
-    var crpointer4 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnRight.nearbyOutlet4ID})].pointerValue;
-
-    if ((Math.abs(pointer2) >= Math.abs(sourcePointer) && Math.abs(pointer3) <= Math.abs(sourcePointer)) ||(Math.abs(pointer1) >= Math.abs(sourcePointer) && Math.abs(pointer4) <= Math.abs(sourcePointer))) {// the outlet is in front of a bridge
-      return bridgesArray[x];
-    }
-    if(sourcePointer < 0) {
-      if (pointer3 < sourcePointer) {
-        if (Math.abs(clpointer3) - Math.abs(sourcePointer) > Math.abs(pointer3) - Math.abs(sourcePointer)) {
-          closestBridgeOnLeft = bridgesArray[x];
-        }
-      }
-      if (pointer2 > sourcePointer) {
-        if (Math.abs(clpointer2) - Math.abs(sourcePointer) > Math.abs(pointer2) - Math.abs(sourcePointer)) {
-          closestBridgeOnRight = bridgesArray[x];
-        }
+  console.log("calculate left right method 1");
+  console.log("bridge Object - "+JSON.stringify(bridgesArrayObject));
+  var response ={};
+  console.log("calculate left right method 2");
+  if ((Math.abs(pointer2) >= Math.abs(sourcePointer) && Math.abs(pointer3) <= Math.abs(sourcePointer)) || (Math.abs(pointer1) >= Math.abs(sourcePointer) && Math.abs(pointer4) <= Math.abs(sourcePointer))) {// the outlet is in front of a bridge
+    return bridgesArrayObject;
+  }
+  if (sourcePointer < 0) {
+    if (pointer3 < sourcePointer) {
+      if (Math.abs(clpointer3) - Math.abs(sourcePointer) > Math.abs(pointer3) - Math.abs(sourcePointer)) {
+        closestBridgeOnLeft = bridgesArrayObject;
       }
     }
-    else {
-      if (pointer1 < sourcePointer) {
-        if (Math.abs(clpointer1) - Math.abs(sourcePointer) > Math.abs(pointer1) - Math.abs(sourcePointer)) {
-          closestBridgeOnLeft = bridgesArray[x];
-        }
-      }
-      if (pointer4 > sourcePointer) {
-        if (Math.abs(clpointer4) - Math.abs(sourcePointer) > Math.abs(pointer4) - Math.abs(sourcePointer)) {
-          closestBridgeOnRight = bridgesArray[x];
-        }
+    if (pointer2 > sourcePointer) {
+      if (Math.abs(clpointer2) - Math.abs(sourcePointer) > Math.abs(pointer2) - Math.abs(sourcePointer)) {
+        closestBridgeOnRight = bridgesArrayObject;
       }
     }
   }
+  else {
+    if (pointer1 < sourcePointer) {
+      if (Math.abs(clpointer1) - Math.abs(sourcePointer) > Math.abs(pointer1) - Math.abs(sourcePointer)) {
+        closestBridgeOnLeft = bridgesArrayObject;
+      }
+    }
+    if (pointer4 > sourcePointer) {
+      if (Math.abs(clpointer4) - Math.abs(sourcePointer) > Math.abs(pointer4) - Math.abs(sourcePointer)) {
+        closestBridgeOnRight = bridgesArrayObject;
+      }
+    }
+  }
+  response["closestRightBridge"] = closestBridgeOnRight;
+  response["closestLeftBridge"] = closestBridgeOnLeft;
+  console.log("calculate left right method exit");
+
+  console.log("closest bridge on the left in method"+JSON.stringify(closestBridgeOnLeft));
+  console.log("closest bridge on the right in method"+JSON.stringify(closestBridgeOnRight));
+
+  console.log("response in method"+JSON.stringify(response));
+  return response;
+}
+
+function findTheClosestBridge(bridgesArray, sourcePointer, destinationPointer, outletArray, hubArray) {
+  var jsonData = {};
+  var resp = null;
+
+
+  if(bridgesArray.length>0) {
+    var closestBridgeOnLeft = bridgesArray[0];
+    var closestBridgeOnRight = bridgesArray[0];
+    var pointer1 = outletArray[_.findIndex(outletArray, {outletID: bridgesArray[0].nearbyOutlet1ID})].pointerValue;
+    var pointer2 = outletArray[_.findIndex(outletArray, {outletID: bridgesArray[0].nearbyOutlet2ID})].pointerValue;
+    var pointer3 = outletArray[_.findIndex(outletArray, {outletID: bridgesArray[0].nearbyOutlet3ID})].pointerValue;
+    var pointer4 = outletArray[_.findIndex(outletArray, {outletID: bridgesArray[0].nearbyOutlet4ID})].pointerValue;
+
+    console.log("outlet array - " + JSON.stringify(outletArray));
+    console.log("bridges array - " + JSON.stringify(bridgesArray));
+
+    for (var x = 1; x < bridgesArray.length; x++) {
+
+      pointer1 = outletArray[_.findIndex(outletArray, {outletID: bridgesArray[x].nearbyOutlet1ID})].pointerValue;
+      pointer2 = outletArray[_.findIndex(outletArray, {outletID: bridgesArray[x].nearbyOutlet2ID})].pointerValue;
+      pointer3 = outletArray[_.findIndex(outletArray, {outletID: bridgesArray[x].nearbyOutlet3ID})].pointerValue;
+      pointer4 = outletArray[_.findIndex(outletArray, {outletID: bridgesArray[x].nearbyOutlet4ID})].pointerValue;
+
+      var clpointer1 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnLeft.nearbyOutlet1ID})].pointerValue;
+      var clpointer2 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnLeft.nearbyOutlet2ID})].pointerValue;
+      var clpointer3 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnLeft.nearbyOutlet3ID})].pointerValue;
+      var clpointer4 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnLeft.nearbyOutlet4ID})].pointerValue;
+
+      /*var crpointer1 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnRight.nearbyOutlet1ID})].pointerValue;
+      var crpointer2 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnRight.nearbyOutlet2ID})].pointerValue;
+      var crpointer3 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnRight.nearbyOutlet3ID})].pointerValue;
+      var crpointer4 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnRight.nearbyOutlet4ID})].pointerValue;*/
+
+      /*if ((Math.abs(pointer2) >= Math.abs(sourcePointer) && Math.abs(pointer3) <= Math.abs(sourcePointer)) || (Math.abs(pointer1) >= Math.abs(sourcePointer) && Math.abs(pointer4) <= Math.abs(sourcePointer))) {// the outlet is in front of a bridge
+        return bridgesArray[x];
+      }
+
+      if (sourcePointer < 0) {
+        if (pointer3 < sourcePointer) {
+          if (Math.abs(clpointer3) - Math.abs(sourcePointer) > Math.abs(pointer3) - Math.abs(sourcePointer)) {
+            closestBridgeOnLeft = bridgesArray[x];
+          }
+        }
+        if (pointer2 > sourcePointer) {
+          if (Math.abs(clpointer2) - Math.abs(sourcePointer) > Math.abs(pointer2) - Math.abs(sourcePointer)) {
+            closestBridgeOnRight = bridgesArray[x];
+          }
+        }
+      }
+      else {
+        if (pointer1 < sourcePointer) {
+          if (Math.abs(clpointer1) - Math.abs(sourcePointer) > Math.abs(pointer1) - Math.abs(sourcePointer)) {
+            closestBridgeOnLeft = bridgesArray[x];
+          }
+        }
+        if (pointer4 > sourcePointer) {
+          if (Math.abs(clpointer4) - Math.abs(sourcePointer) > Math.abs(pointer4) - Math.abs(sourcePointer)) {
+            closestBridgeOnRight = bridgesArray[x];
+          }
+        }
+      }*/
+      //console.log("calculate left right method base");
+      resp = calculateLeftRightClosestBridge(sourcePointer,pointer1,pointer2,pointer3,pointer4,bridgesArray[x],outletArray,closestBridgeOnLeft);
+    }
+    if(bridgesArray.length == 1)
+      resp = calculateLeftRightClosestBridge(sourcePointer,pointer1,pointer2,pointer3,pointer4,bridgesArray[0],outletArray);
+    //var exitOutlet = outletArray[_.findIndex(outletArray, {outletID: resp.nearbyOutlet1ID})].pointerValue;
+    //console.log("response - "+JSON.stringify(resp));
+    if ((Math.abs(clpointer3) - Math.abs(sourcePointer)) < (Math.abs(clpointer2) - Math.abs(sourcePointer))) {
+      //return closestBridgeOnLeft;
+      //var exitOutlet = outletArray[_.findIndex(outletArray, {outletID: resp.closestLeftBridge.nearbyOutlet1ID})];
+      console.log("exitOutlet"+JSON.stringify(closestBridgeOnLeft));
+      jsonData["closestExit"] = closestBridgeOnLeft;
+      jsonData["sourceExitDir"] = "left";
+    }
+    else {
+      //return closestBridgeOnRight;
+      //var exitOutlet = outletArray[_.findIndex(outletArray, {outletID: resp.closestRightBridge.nearbyOutlet1ID})];
+      console.log("exitOutlet"+JSON.stringify(closestBridgeOnRight));
+      jsonData["closestExit"] = closestBridgeOnRight;
+      jsonData["sourceExitDir"] = "right";
+    }
+  }
+  //if there are no bridges and only escalators
+  if(bridgesArray == null ||bridgesArray.length == 0) {
+
+    var fromIndex = _.findIndex(outletArray, {pointerValue: sourcePointer});
+    var floor1 = outletArray[fromIndex].floorNumber;
+    var zone1 = outletArray[fromIndex].floorZoneID;
+    var esc1 = getEscalatorIdUsingFromOutletID(hubArray, floor1, zone1, sourcePointer);
+    var esc1nearbyOutletName = _.find(outletArray, {outletID: esc1.nearbyOutlet1ID}).outletName;
+    var escName1 = esc1.escalatorName;
+
+    var escpointer1 = outletArray[_.findIndex(outletArray, {outletID: esc1.nearbyOutlet1ID})].pointerValue;
+    var escpointer2 = outletArray[_.findIndex(outletArray, {outletID: esc1.nearbyOutlet2ID})].pointerValue;
+    var escpointer3 = outletArray[_.findIndex(outletArray, {outletID: esc1.nearbyOutlet3ID})].pointerValue;
+    var escpointer4 = outletArray[_.findIndex(outletArray, {outletID: esc1.nearbyOutlet4ID})].pointerValue;
+
+    resp = calculateLeftRightClosestBridge(sourcePointer,escpointer1,escpointer2,escpointer3,escpointer4,esc1,outletArray);
+    if(resp.closestBridgeOnLeft != "") {
+      jsonData["closestExit"] = resp.closestLeftBridge;
+      jsonData["sourceExitDir"] = "left";
+    }
+    else if(resp.closestBridgeOnRight != "") {
+      jsonData["closestExit"] = resp.closestRightBridge;
+      jsonData["sourceExitDir"] = "right";
+    }
+  }
   //console.log(close);
-  if ((Math.abs(clpointer3) - Math.abs(sourcePointer)) < (Math.abs(clpointer2) - Math.abs(sourcePointer)))
-    return closestBridgeOnLeft;
-  else
-    return closestBridgeOnRight;
-  return null;
+
+  return jsonData;
 }
 
 function getMeaningfulObjectFromOutlet(outletObject) {
@@ -900,7 +1010,6 @@ module.exports = {
           var esc1nearbyOutletName = _.find(allOutletsArray, {outletID: esc1.nearbyOutlet1ID}).outletName;
           var escName1 = esc1.escalatorName;
 
-
           var esc2 = _.find(hubTransitArray, {escalatorName: escName1, floorID: floor2});
           console.log("Escalator 2:" + JSON.stringify(esc2));
 
@@ -929,8 +1038,14 @@ module.exports = {
             viaOutletName = ( isShorterDistanceToOutlet(nearbyOutlet3, nearbyOutlet4, outletArray[toIndex])  ) ? (nearbyOutlet3.outletName) : (nearbyOutlet4.outletName);
           }
 
+          var response = findTheClosestBridge(hubTransitArray, pointer1, pointer2,allOutletsArray,hubTransitArray);
+          console.log("response of closest bridge - "+JSON.stringify(response));
+          closestBridge = response.closestExit;
+          var exitDir = response.sourceExitDir;
+          console.log("1 id - "+closestBridge.nearbyOutlet1ID);
+
           var returnValue = getDifferentFloorTemplateUsingValues(
-            name1, dir1, esc1nearbyOutletName, isGoingUp, diff, viaOutletName, name2);
+            name1, exitDir, esc1nearbyOutletName, isGoingUp, diff, viaOutletName, name2);
 
           console.log("returnValue:" + returnValue);
           res.json(returnValue);
@@ -992,7 +1107,9 @@ module.exports = {
                 }
                 else {
                   // there are bridges in that zone hence user needs to take the bridge
-                  closestBridge = findTheClosestBridge(hubTransitArray2, pointer1, pointer2,allOutletsArray);
+                  var response = findTheClosestBridge(hubTransitArray2, pointer1, pointer2,allOutletsArray,hubTransitArray);
+                  console.log("response of closest bridge - "+JSON.stringify(response));
+                  closestBridge = response.closestExit;
                   console.log("1 id - "+closestBridge.nearbyOutlet1ID);
 
                   var cbpointer1 = allOutletsArray[_.findIndex(allOutletsArray, {outletID: closestBridge.nearbyOutlet1ID})].pointerValue;
