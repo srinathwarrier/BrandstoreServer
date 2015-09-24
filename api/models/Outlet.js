@@ -79,6 +79,10 @@ module.exports = {
     favoritedBy:{
       collection:'UserFavorite',
       via:'outletID'
+    },
+    collectionAssignment:{
+      collection:'CollectionOutletAssignment',
+      via:'outletID'
     }
   }
 };

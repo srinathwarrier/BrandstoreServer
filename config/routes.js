@@ -58,23 +58,32 @@ module.exports.routes = {
   'get /admin': 'NgAdminController.index',
 
 
+  /* Search Suggestions Routes */
   //'get /v2/getRecentAndPopularSuggestions':'V2Controller.getRecentAndPopularSuggestions',
-  'get /v2/getSuggestions':'V2Controller.getSuggestions',
-  'get /v2/getOutlets':'V2Controller.getOutlets',
-  'get /v2/getOutletDetails':'V2Controller.getOutletDetails',
-  //'get /v2/getRelatedBrandOutlets':'V2Controller.getRelatedBrandOutlets',
-  'get /v2/getTakeMeThereCommands' :'V2Controller.getTakeMeThereCommands',
-  'get /v2/getAllFavoriteOutlets' : 'V2Controller.getAllFavoriteOutlets',
-  'get /v2/getOutletsForTagId' : 'V2Controller.getOutletsForTagId',
-  'get /v2/setFavoriteOutlet' : 'V2Controller.setFavoriteOutlet',
-  'get /v2/updateRegID' : 'V2Controller.updateRegID',
-  'get /v2/sendNotificationToAndroid' : 'V2Controller.sendNotificationToAndroid',
-  'get /v2/forgotPassword' : 'V2Controller.forgotPassword',
-  'get /v2/signup' : 'V2Controller.signup',
+  'get /v2/getSuggestions':'v2/SuggestionsController.getSuggestions',
 
+  /* Outlet list Routes */
+  'get /v2/getOutlets':'v2/OutletListController.getOutlets',
+  'get /v2/getAllFavoriteOutlets' : 'v2/OutletListController.getAllFavoriteOutlets',
+  'get /v2/getAllOnSaleOutlets' : 'v2/OutletListController.getAllOnSaleOutlets',
+  'get /v2/getOutletsForTagId' : 'v2/OutletListController.getOutletsForTagId',
+  'get /v2/getOutletsForCollectionId' : 'v2/OutletListController.getOutletsForCollectionId',
 
+  /* Outlet details Routes*/
+  'get /v2/getOutletDetails':'v2/OutletDetailsController.getOutletDetails',
+  'get /v2/setFavoriteOutlet' : 'v2/OutletDetailsController.setFavoriteOutlet',
+  //'get /v2/getRelatedBrandOutlets':'v2/OutletDetailsController.getRelatedBrandOutlets',
 
+  /* TMT Routes */
+  'get /v2/getTakeMeThereCommands' :'V2Controller.getTakeMeThereCommands', //TODO: Change to v2/TakeMeThereController
 
+  /* GCM Routes */
+  'get /v2/updateRegID' : 'v2/NotificationsController.updateRegID',
+  'get /v2/sendNotificationToAndroid' : 'v2/NotificationsController.sendNotificationToAndroid',
+
+  /* Authentication Routes */
+  'get /v2/forgotPassword' : 'v2/AuthController.forgotPassword',
+  'get /v2/signup' : 'v2/AuthController.signup'
 
 
 
