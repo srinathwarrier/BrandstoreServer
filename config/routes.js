@@ -75,7 +75,7 @@ module.exports.routes = {
   //'get /v2/getRelatedBrandOutlets':'v2/OutletDetailsController.getRelatedBrandOutlets',
 
   /* TMT Routes */
-  'get /v2/getTakeMeThereCommands' :'V2Controller.getTakeMeThereCommands', //TODO: Change to v2/TakeMeThereController
+  'get /v2/getTakeMeThereCommands' :'v2/TakeMeThereController.getTakeMeThereCommands',
 
   /* GCM Routes */
   'get /v2/updateRegID' : 'v2/NotificationsController.updateRegID',

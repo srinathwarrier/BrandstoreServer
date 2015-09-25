@@ -222,7 +222,6 @@ module.exports = {
           res.json({Error:"Invalid collectionid"});
           return;
         }
-
         var outletIdArray = _.pluck(_.sortBy(collectionArray[0].outletAssignment, 'sortOrderIndex'), 'outletID');
 
         Outlet
@@ -247,7 +246,11 @@ module.exports = {
           })
           .spread(function (outletArray, staticAveragePricesArray, userFavoriteArray) {
             var resultArray = getFinalOutletArray(outletArray, staticAveragePricesArray , userFavoriteArray , false , false);
-            res.json(resultArray);
+
+            var resultArraySorted = _.sortBy(resultArray , function(obj){
+              return _.indexOf(outletIdArray, obj.outletID )
+            });
+            res.json(resultArraySorted);
           });
 
       });
