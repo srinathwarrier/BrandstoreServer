@@ -6,6 +6,15 @@
 module.exports = {
 
   //getRecentAndPopularSuggestions - Pending to be converted to Sails
+  getRecentAndPopularSuggestions :function(req,res,connection){
+    var param = req.query.q;
+    var userId = req.query.userid;
+    if (userId == undefined) userId = 6;
+
+    res.send();
+
+
+  },
 
   getSuggestions: function (req, res, connection) {
     // 1) /getSuggestions?q=zara&userid=6
@@ -68,7 +77,7 @@ module.exports = {
 
         //get tagArray and prepare
         var tagArray = Tag.find({select: ['tagID', 'tagName']})
-          .where({tagName: {contains: param}})
+          .where({tagName: {contains: param},active:true})
           .then(function (tagArray) {
             for (var tagIndex in tagArray) {
               tagArray[tagIndex].type = "category";
