@@ -3,8 +3,8 @@
  */
 
 function calculateLeftRightClosestBridge(sourcePointer, pointer1, pointer2, pointer3, pointer4, bridgesArrayObject,outletArray,clBridgeOnLeft) {
-  var closestBridgeOnLeft = "";
-  var closestBridgeOnRight = "";
+  var closestBridgeOnLeft = clBridgeOnLeft;
+  var closestBridgeOnRight = clBridgeOnLeft;
   console.log("source pointer "+sourcePointer );
   console.log(" pointer 1 "+pointer1 );
   console.log(" pointer 2 "+pointer2 );
@@ -257,12 +257,12 @@ function getSameFloorOppositeSidesTemplate2 (fromOutletname, toOutletName) {
   ];
 }
 
-function getSameFloorOppositeSidesTemplate3 (fromOutletname, exitDir, outletsBetweenFromAndBridge, exitBridgeDir, outletsBetweenBridgeAndTo, toOutletName, toOutletDir) {
+function getSameFloorOppositeSidesTemplate3 (fromOutletname, exitDir, outletsBetweenFromAndBridge, exitBridgeDir, outletsBetweenBridgeAndTo, toOutletName, toOutletDir,outletOppositeBridgeName) {
   //the from outlet does not have a bridge in front of it.
   if (exitDir != null) {
     return [
       'Exit "' + fromOutletname + '" on your ' + exitDir + ' .',
-      'Go ahead about ' + outletsBetweenFromAndBridge + ' outlets and take the bridge ahead.',
+      'Go ahead about ' + outletsBetweenFromAndBridge + ' outlets and take the bridge near '+outletOppositeBridgeName+'.',
       'Cross the bridge and Exit on your ' + exitBridgeDir + ' and continue straight ',
       'Your destination ' + toOutletName + ' would be on your ' + toOutletDir + '.'
     ];
@@ -271,7 +271,7 @@ function getSameFloorOppositeSidesTemplate3 (fromOutletname, exitDir, outletsBet
     // destination is right in front of the bridge
     return [
       'Exit "' + fromOutletname + '" on your ' + exitDir + ' .',
-      'Go ahead about ' + outletsBetweenFromAndBridge + ' outlets and take the bridge.',
+      'Go ahead about ' + outletsBetweenFromAndBridge + ' outlets and take the bridge near '+outletOppositeBridgeName+'.',
       'Cross the bridge and your destination ' + toOutletName + ' shoule be stright ahead '];
   }
 }
@@ -282,7 +282,7 @@ function getEscalatorIdUsingFromOutletID(hubTransitArray, floor1, zone1, pointer
   if(zone1 != null)
     return _.find(hubTransitArray, {floorID: floor1, floorZoneID: zone1}); //TODO: Check if this escalator does go to floor2
   else
-    return _.find(hubTransitArray, {floorID: floor1});
+    return _.filter(hubTransitArray, {floorID: floor1});
 }
 
 
@@ -366,13 +366,13 @@ module.exports = {
             console.log("the escalator in that zone does not go to the destination floor");
             var allEscalatorsOnThatFloor =  getEscalatorIdUsingFromOutletID(hubTransitArray, floor1, null, pointer1);
             do {
-              var temp = findTheClosestBridge(allEscalatorsOnThatFloor,pointer1,pointer2,allOutletsArray,null);
-              escName1 = temp.escalatorName;
+              response = findTheClosestBridge(allEscalatorsOnThatFloor,pointer1,pointer2,allOutletsArray,null);
+              escName1 = response.closestExit.escalatorName;
               esc2 = _.find(hubTransitArray, {escalatorName: escName1, floorID: floor2});
               console.log("all escalators - "+allEscalatorsOnThatFloor);
               //allEscalatorsOnThatFloor.splice(temp.bridgeIndexInBridgesArray,1);
-              console.log("escalator index - "+temp.bridgeIndexInBridgesArray);
-              delete allEscalatorsOnThatFloor[temp.bridgeIndexInBridgesArray];
+              console.log("escalator index - "+response.bridgeIndexInBridgesArray);
+              delete allEscalatorsOnThatFloor[response.bridgeIndexInBridgesArray];
             }
             while(esc2 == undefined || esc2 == null);
            }
@@ -452,7 +452,10 @@ module.exports = {
 
                 console.log("hub transit array:" + hubTransitArray2);
 
+                /* var response = findTheClosestBridge(hubTransitArray2, pointer1, pointer2,allOutletsArray,hubTransitArray);*/
+
                 var closestBridge;
+                /*if (response.closestExit == undefined || response.closestExit == null || response.closestExit.length == 0) {*/
                 if (hubTransitArray2 == undefined || hubTransitArray2 == null || hubTransitArray2.length == 0) {
                   // there are no bridges so the user can directly go across
                   console.log("no bridges found");
@@ -471,6 +474,7 @@ module.exports = {
                 }
                 else {
                   // there are bridges in that zone hence user needs to take the bridge
+                  var outletOppositeBridgeName = null;
                   var response = findTheClosestBridge(hubTransitArray2, pointer1, pointer2,allOutletsArray,hubTransitArray);
                   console.log("response of closest bridge - "+JSON.stringify(response));
                   closestBridge = response.closestExit;
@@ -540,6 +544,7 @@ module.exports = {
                       //from outlet of the right side of the mall
                       if (Math.abs(cbpointer3) > Math.abs(pointer1)) {
                         exitDir = "left";
+                        outletOppositeBridgeName = _.find(allOutletsArray, {outletID: closestBridge.nearbyOutlet3ID}).outletName;
                         outletsBetweenFromAndBridge = Math.abs(cbpointer3) - Math.abs(pointer1);
                         console.log("outlets between the bridge and source - "+outletsBetweenFromAndBridge);
                         //if destination outlet is on the other end of the bridge
@@ -563,6 +568,7 @@ module.exports = {
                       else {
                         exitDir = "right";
                         outletsBetweenFromAndBridge = Math.abs(cbpointer4) - Math.abs(pointer1);
+                        outletOppositeBridgeName = _.find(allOutletsArray, {outletID: closestBridge.nearbyOutlet2ID}).outletName;
                         if ((Math.abs(pointer2) == Math.abs(cbpointer2))
                           || (Math.abs(pointer2) == Math.abs(cbpointer3))
                           || (Math.abs(pointer2) > Math.abs(cbpointer2) && (Math.abs(pointer2) < Math.abs(cbpointer3))))
@@ -586,6 +592,7 @@ module.exports = {
                       if (Math.abs(cbpointer4) > Math.abs(pointer1)) {
                         exitDir = "right";
                         outletsBetweenFromAndBridge = Math.abs(cbpointer2) - Math.abs(pointer1);
+                        outletOppositeBridgeName = _.find(allOutletsArray, {outletID: closestBridge.nearbyOutlet4ID}).outletName;
                         if ((Math.abs(pointer2) == Math.abs(cbpointer2))
                           || (Math.abs(pointer2) == Math.abs(cbpointer3))
                           || (Math.abs(pointer2) > Math.abs(cbpointer2) && (Math.abs(pointer2) < Math.abs(cbpointer3))))
@@ -606,6 +613,7 @@ module.exports = {
                       else {
                         exitDir = "left";
                         outletsBetweenFromAndBridge = Math.abs(cbpointer3) - Math.abs(pointer1);
+                        outletOppositeBridgeName = _.find(allOutletsArray, {outletID: closestBridge.nearbyOutlet1ID}).outletName;
                         if ((Math.abs(pointer2) == Math.abs(cbpointer2))
                           || (Math.abs(pointer2) == Math.abs(cbpointer3))
                           || (Math.abs(pointer2) > Math.abs(cbpointer2) && (Math.abs(pointer2) < Math.abs(cbpointer3))))
@@ -624,8 +632,9 @@ module.exports = {
                         }
                       }
                     }
+
                     returnValue = getSameFloorOppositeSidesTemplate3(
-                      name1, exitDir, Math.abs(outletsBetweenFromAndBridge), exitBridgeDir, Math.abs(outletsBetweenBridgeAndTo), name2, destinationDir);
+                      name1, exitDir, Math.abs(outletsBetweenFromAndBridge), exitBridgeDir, Math.abs(outletsBetweenBridgeAndTo), name2, destinationDir,outletOppositeBridgeName);
                   }
                 }
                 console.log("returnValue:" + returnValue);
