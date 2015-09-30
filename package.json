@@ -23,7 +23,8 @@
     "sails": "~0.11.0",
     "sails-disk": "~0.10.0",
     "sails-mysql": "^0.10.12",
-    "nodemailer": "1.5.0"
+    "nodemailer": "1.5.0",
+    "node-gcm":"0.11.0"
   },
   "scripts": {
     "debug": "node debug app.js",
