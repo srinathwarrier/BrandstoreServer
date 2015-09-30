@@ -35,6 +35,10 @@ module.exports = {
       type:'string',
       size:50
     },
+    token:{
+      type:'string',
+      size:100
+    },
     genderCode : {
       type: 'text'
     },

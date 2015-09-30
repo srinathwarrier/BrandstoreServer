@@ -83,7 +83,11 @@ module.exports.routes = {
 
   /* Authentication Routes */
   'get /v2/forgotPassword' : 'v2/AuthController.forgotPassword',
+  'get /v2/reset':'v2/AuthController.reset',
+  'post /v2/setnewpassword' : 'v2/AuthController.setnewpassword',
   'get /v2/signup' : 'v2/AuthController.signup'
+
+
 
 
 
