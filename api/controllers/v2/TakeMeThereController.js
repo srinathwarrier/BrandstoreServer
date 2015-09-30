@@ -662,7 +662,7 @@ module.exports = {
     }
     else {
       console.log("source and destination are same");
-      res.json("Please choose a different Destination");
+      res.json(["Please choose a different Destination"]);
       return;
     }
 
