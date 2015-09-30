@@ -111,7 +111,7 @@ module.exports = {
 
     var userID = req.query.userid,
       outletID = req.query.outletid,
-      toBeSet = ( (req.query.set === 'true')?true : (req.query.set === 'true')?false:undefined );
+      toBeSet = ( (req.query.set === 'true')?true : (req.query.set === 'false')?false:undefined );
 
     if (toBeSet == undefined) {
       res.json({responseState:"error","error": "The key 'set' is not sent as a parameter"});
