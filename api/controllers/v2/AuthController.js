@@ -185,7 +185,7 @@ module.exports = {
         }
         //  If exists, then it is a login attempt. Simply Return the "found" object. Don't change anything.
         if(found!=undefined && found.length && found.length > 0){
-          res.json({"responseState":"success","responseDetails":found[0]});
+          res.json({"responseState":"login","responseDetails":found[0]});
         }
 
         //  If does not exist, then it is a signup attempt. Create a new User using User.create and then Return the new user json object
@@ -206,7 +206,7 @@ module.exports = {
               }
               else{
                 console.log('Created interaction:' + JSON.stringify(created));
-                res.json({"responseState":"created","responseDetails":created});
+                res.json({"responseState":"signup","responseDetails":created});
               }
             });
         }
