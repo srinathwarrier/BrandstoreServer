@@ -133,7 +133,7 @@ module.exports = {
 
     // Check if User with emailId exists.
     User
-      .find({emailid:emailId})
+      .find({emailid:emailId,accounttype:"brandstore"})
       .exec(function(err,found){
         if(err){
           res.json({"responseState":"error","responseDetails":err});
@@ -163,6 +163,56 @@ module.exports = {
         }
 
       });
+
+  },
+
+  externalAccountLoginOrSignUp:function(req,res,connection){
+    // Get details -> emailid, name, gendercode,dob, accounttype
+    var emailId = req.query.emailid,
+      name = req.query.name,
+      gendercode = req.query.gendercode,
+      dob=req.query.dob,
+      accounttype = req.query.accounttype; // "facebook" / "google"
+
+    // Known data -> [ userRoleID = 1 , password = ""]
+
+    // Check if (emailid + accounttype) exists
+    User
+      .find({emailid:emailId,accounttype:accounttype})
+      .exec(function(err,found) {
+        if (err) {
+          res.json({"responseState": "error", "responseDetails": err});
+        }
+        //  If exists, then it is a login attempt. Simply Return the "found" object. Don't change anything.
+        if(found!=undefined && found.length && found.length > 0){
+          res.json({"responseState":"success","responseDetails":found[0]});
+        }
+
+        //  If does not exist, then it is a signup attempt. Create a new User using User.create and then Return the new user json object
+        else{
+          User
+            .create({
+              userRoleID : 1,
+              name:name,
+              emailid:emailId,
+              password:"",
+              genderCode : gendercode,
+              dob:dob,
+              accounttype:accounttype
+            }).exec(function(err,created){
+              if(err){
+                console.log('Error in creating user:' + JSON.stringify(err));
+                res.json({"responseState":"error","responseDetails":err});
+              }
+              else{
+                console.log('Created interaction:' + JSON.stringify(created));
+                res.json({"responseState":"created","responseDetails":created});
+              }
+            });
+        }
+
+      });
+
 
   }
 };

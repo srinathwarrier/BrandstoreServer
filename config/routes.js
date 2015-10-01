@@ -76,6 +76,8 @@ module.exports.routes = {
 
   /* TMT Routes */
   'get /v2/getTakeMeThereCommands' :'v2/TakeMeThereController.getTakeMeThereCommands',
+  'get /v2/getTakeMeThereCommandsForCategory' :'v2/TakeMeThereController.getTakeMeThereCommandsForCategory',
+
 
   /* GCM Routes */
   'get /v2/updateRegID' : 'v2/NotificationsController.updateRegID',
@@ -85,7 +87,8 @@ module.exports.routes = {
   'get /v2/forgotPassword' : 'v2/AuthController.forgotPassword',
   'get /v2/reset':'v2/AuthController.reset',
   'post /v2/setnewpassword' : 'v2/AuthController.setnewpassword',
-  'get /v2/signup' : 'v2/AuthController.signup'
+  'get /v2/signup' : 'v2/AuthController.signup',
+  'get /v2/externalAccountLoginOrSignUp' : 'v2/AuthController.externalAccountLoginOrSignUp'
 
 
 
