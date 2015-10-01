@@ -25,39 +25,52 @@ module.exports = {
   sendNotificationToAndroid: function (req, res, connection) {
     var msgValue = req.query.msg;
 
-    var gcm = require('node-gcm');
 
-    var message = new gcm.Message();
+    var message = new sails.gcm.Message();
 
-    message.addData('key1', msgValue);
+    message.addData('message', msgValue);
 
-    var regIds = ['APA91bH9Rgc8JJIPL1Uh2URIO7qF3PjmRhi55zY2S5OTUzJhEI-4VidecoRud_Tdfu-1_bADTG05Nem1CXefc-zzxL2Lud6KKD6pdhjPFKmf2LjRWlUxxFPCAAr4sbi310npUAYyzS_2'];
-
-// Set up the sender with you API key
-    var sender = new gcm.Sender('AIzaSyB6HVQ6Axi_EOIk1R9j-gSplBJYeRX3pG0');
-
-//Now the sender can be used to send messages
-    sender.send(message, regIds, function (err, result) {
-      if (err) {
-        console.error(err);
-        res.json(err);
-        return;
-      }
-      console.log(result);
-      UserInteraction.create({
-        userID:6,
-        userInteractionTypeID:9, // 9 is gcmNotification
-        userInteractionLog:JSON.stringify(result)
-      }).exec(function(err,created){
+    // fetch regids from User table
+    User
+      .find({regid:{"!":""}})
+      .exec(function (err,found){
         if(err){
-          console.log('Error in creating interaction:' + JSON.stringify(err));
+          res.json(err);
+          return;
         }
-        else{
-          console.log('Created interaction:' + JSON.stringify(created));
-        }
+        var regidsArray = _.pluck(found,'regid');
+
+        var regIds = ['dSzqVbA2fBY:APA91bH-kULt7kskqSSgmc3aoXmG5YB21zXrmxEI9YQUz6JaZ_32toSNrkT6SAXSXWuE8WJQefo3zfldCGrqTP9Lgrmltk2K6R3rZO5chRWsRdDLAUcLWdJTLIxy3U67ZlndC2Ivh6aG'];
+
+        // Set up the sender with you API key
+        var sender = new sails.gcm.Sender('AIzaSyCJIxgLzE6YDX8_JHXH45PR8c8-btjaE38');
+
+        //Now the sender can be used to send messages
+        sender.send(message, { registrationIds: regidsArray }, function (err, result) {
+          if (err) {
+            console.error(err);
+            res.json(err);
+            return;
+          }
+          console.log(result);
+          UserInteraction.create({
+            userID:6,
+            userInteractionTypeID:9, // 9 is gcmNotification
+            userInteractionLog:JSON.stringify(result)
+          }).exec(function(err,created){
+            if(err){
+              console.log('Error in creating interaction:' + JSON.stringify(err));
+            }
+            else{
+              console.log('Created interaction:' + JSON.stringify(created));
+            }
+          });
+          res.json(result);
+        });
+
       });
-      res.json(result);
-    });
+
+
 
     //sender.sendNoRetry(message, regIds, function (err, result) {
     //  if(err) console.error(err);
