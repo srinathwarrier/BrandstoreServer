@@ -174,6 +174,10 @@ module.exports = {
       dob=req.query.dob,
       accounttype = req.query.accounttype; // "facebook" / "google"
 
+    if(dob==undefined)dob="1900-01-01"; // default birthdate
+    if(gendercode==undefined) gendercode="X"; // default birthdate
+    if(accounttype==undefined)accounttype=""; // So below Transaction will fail
+
     // Known data -> [ userRoleID = 1 , password = ""]
 
     // Check if (emailid + accounttype) exists
@@ -182,6 +186,7 @@ module.exports = {
       .exec(function(err,found) {
         if (err) {
           res.json({"responseState": "error", "responseDetails": err});
+          return;
         }
         //  If exists, then it is a login attempt. Simply Return the "found" object. Don't change anything.
         if(found!=undefined && found.length && found.length > 0){
