@@ -461,13 +461,25 @@ module.exports = {
                   console.log("no bridges found");
                   var exitFromSourceDir;
                   var destinationDir;
-                  if (Math.abs(pointer2) > Math.abs(pointer1)) {
-                    exitFromSourceDir = "left";
-                    destinationDir = "right";
+                  if(pointer1 < 0 ) {
+                    if (Math.abs(pointer2) > Math.abs(pointer1)) {
+                      exitFromSourceDir = "left";
+                      destinationDir = "right";
+                    }
+                    else {
+                      exitFromSourceDir = "right";
+                      destinationDir = "left";
+                    }
                   }
                   else {
-                    exitFromSourceDir = "right";
-                    destinationDir = "left";
+                    if (Math.abs(pointer2) > Math.abs(pointer1)) {
+                      exitFromSourceDir = "right";
+                      destinationDir = "left";
+                    }
+                    else {
+                      exitFromSourceDir = "left";
+                      destinationDir = "right";
+                    }
                   }
                   returnValue = getSameFloorTemplateUsingValues(
                     name1, exitFromSourceDir, Math.abs(pointer1 - pointer2), name2, destinationDir);
