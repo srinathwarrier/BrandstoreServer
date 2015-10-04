@@ -12,8 +12,17 @@ module.exports = {
   "tableName": "StaticAveragePrices",
   autoPK: false,
   "attributes": {
-    "brandID": {
-      "type": "integer"
+    tempid:{
+      type:"integer"
+    },
+    brandID: {
+      type: "integer"
+    },
+    outletID:{
+      type:"integer"
+    },
+    isManual:{
+      type:"boolean"
     },
     "tagID": {
       "type": "integer"

@@ -31,6 +31,10 @@ module.exports = {
       type: 'string',
       size:50
     },
+    accountid : {
+      type: 'string',
+      size:50
+    },
     emailid : {
       type:'string',
       size:50

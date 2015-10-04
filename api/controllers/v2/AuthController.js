@@ -172,17 +172,27 @@ module.exports = {
       name = req.query.name,
       gendercode = req.query.gendercode,
       dob=req.query.dob,
+      accountid = req.query.accountid,
       accounttype = req.query.accounttype; // "facebook" / "google"
 
     if(dob==undefined)dob="1900-01-01"; // default birthdate
     if(gendercode==undefined) gendercode="X"; // default birthdate
-    if(accounttype==undefined)accounttype=""; // So below Transaction will fail
+    if(accountid==undefined){
+      // So below Transaction will fail
+      res.json({"responseState":"error","responseDetails":"No accountid sent"});
+      return;
+    }
+    if(accounttype==undefined){
+      // So below Transaction will fail
+      res.json({"responseState":"error","responseDetails":"No accounttype sent"});
+      return;
+    }
 
     // Known data -> [ userRoleID = 1 , password = ""]
 
-    // Check if (emailid + accounttype) exists
+    // Check if (accountid + accounttype) exists in DB
     User
-      .find({emailid:emailId,accounttype:accounttype})
+      .find({accountid:accountid,accounttype:accounttype})
       .exec(function(err,found) {
         if (err) {
           res.json({"responseState": "error", "responseDetails": err});
@@ -203,6 +213,7 @@ module.exports = {
               password:"",
               genderCode : gendercode,
               dob:dob,
+              accountid:accountid,
               accounttype:accounttype
             }).exec(function(err,created){
               if(err){

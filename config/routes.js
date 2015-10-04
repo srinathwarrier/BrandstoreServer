@@ -88,7 +88,10 @@ module.exports.routes = {
   'get /v2/reset':'v2/AuthController.reset',
   'post /v2/setnewpassword' : 'v2/AuthController.setnewpassword',
   'get /v2/signup' : 'v2/AuthController.signup',
-  'get /v2/externalAccountLoginOrSignUp' : 'v2/AuthController.externalAccountLoginOrSignUp'
+  'get /v2/externalAccountLoginOrSignUp' : 'v2/AuthController.externalAccountLoginOrSignUp',
+
+  /* test */
+  'get /testSAP':"V2Controller.fillAllOutletIDsInStaticAvgPrices"
 
 
 
