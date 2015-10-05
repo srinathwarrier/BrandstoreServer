@@ -56,6 +56,25 @@ module.exports = {
           //outletArray[outletIndex].type = "outlet";
           outletArray[outletIndex].name = outletArray[outletIndex].outletName;
           outletArray[outletIndex].Id = outletArray[outletIndex].outletID;
+          var returnValue="";
+          switch (outletArray[outletIndex].floorNumber + "") {
+            case '-1':
+              returnValue = "Lower ground floor";
+              break;
+            case '0':
+              returnValue = "Ground floor";
+              break;
+            case '1':
+              returnValue = "First floor";
+              break;
+            case '2':
+              returnValue = "Second floor";
+              break;
+            default :
+              returnValue = "";
+              break;
+          }
+          outletArray[outletIndex].floorNumber=returnValue;
           delete outletArray[outletIndex].outletID;
           delete outletArray[outletIndex].outletName;
           delete outletArray[outletIndex].active;

@@ -18,7 +18,7 @@ module.exports = {
           })
         }
         // Send mail with following format
-        // http://www.brandstore.co.in/v2/reset?emailid=ABC@GMAIL>.COM&token=TOKEN
+        // http://www.brandstore.co.in/v2/reset?emailid=ABC@GMAIL.COM&token=TOKEN
         var emailString = updated[0].emailid,
           tokenString = updated[0].token,
           nameString = updated[0].name;
@@ -84,7 +84,14 @@ module.exports = {
   setnewpassword:function(req,res,connection){
     var emailid = req.body.emailid,
       password = req.body.newpassword,
+      confirmpassword=req.body.confirmpassword,
       token = req.body.token;
+
+    if(password!==confirmpassword){
+      res.view('pages/resetpassworderror',{emailid:emailid , token:token,pageTitle:"Incorrect password combination."});
+      return;
+    }
+
     User
       .update(
       {
@@ -98,16 +105,10 @@ module.exports = {
       })
       .exec(function (err,updated) {
         if(err || !updated || updated.length==0){
-          res.json({
-            "responseState":"error",
-            "responseDetails":"Not updated password"
-          });
+          res.view('pages/resetpassworderror',{emailid:emailid , token:token,pageTitle:"Password already used previously."});
           return;
         }
-        res.json({
-          "responseState":"success",
-          "responseDetails":"Updated the password."
-        });
+        res.view('pages/resetpasswordsuccess');
 
       });
   },
@@ -149,7 +150,8 @@ module.exports = {
               emailid:emailId,
               password:password,
               genderCode : genderCode,
-              dob:dob
+              dob:dob,
+              accounttype:"brandstore"
             }).exec(function(err,created){
               if(err){
                 console.log('Error in creating interaction:' + JSON.stringify(err));
@@ -175,6 +177,8 @@ module.exports = {
       accountid = req.query.accountid,
       accounttype = req.query.accounttype; // "facebook" / "google"
 
+    if(name==undefined)name="";
+    if(emailId==undefined)emailId="";
     if(dob==undefined)dob="1900-01-01"; // default birthdate
     if(gendercode==undefined) gendercode="X"; // default birthdate
     if(accountid==undefined){
