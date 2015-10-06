@@ -37,7 +37,7 @@ module.exports = {
 
 
         var mailOptions = {
-          from: 'contact.brandstore@gmail.com', // sender address
+          from: 'Brandstore <contact.brandstore@gmail.com>', // sender address
           to: emailString, // list of receivers
           subject: "Brandstore - Request to change your password ", // Subject line
           //text: mailBodyString, // plaintext body

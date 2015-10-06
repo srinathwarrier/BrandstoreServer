@@ -11,7 +11,7 @@ module.exports = {
     var userId = req.query.userid;
     if (userId == undefined) userId = 6;
 
-    res.send();
+    res.json();
 
 
   },

@@ -172,7 +172,7 @@ module.exports = {
                 obj.isFavorite = false;
               }
 
-              obj.outletName = obj.brandName;
+              //obj.outletName = obj.brandName;
 
               return obj;
             }
