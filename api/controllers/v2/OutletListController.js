@@ -617,6 +617,13 @@ module.exports = {
     });
   },
 
+  test2:function(req,res,connection){
+    return "from test2";
+  },
+
+  test3:function(){
+    return "from test3";
+  },
 
 
 };

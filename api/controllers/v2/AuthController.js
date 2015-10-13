@@ -234,5 +234,10 @@ module.exports = {
       });
 
 
+  },
+
+  test:function(req,res,connection){
+    //var a = v2.OutletListController.test2();
+    var b = OutletListController.test3();
   }
 };

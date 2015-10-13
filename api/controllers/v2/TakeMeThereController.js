@@ -2,6 +2,49 @@
  * Created by I076324 on 9/23/2015.
  */
 
+function getDirectionToTransitAndNearbyOutletName(allOutletsArray,allTransitArray, outlet ,transit) {
+  // Input : allArrays, outletObject, transitObject
+
+  // Fetch nearbyOutlet objects
+  var nearbyOutlet1 = _.find(allOutletsArray, {outletID: transit.nearbyOutlet1ID});
+  var nearbyOutlet2 = _.find(allOutletsArray, {outletID: transit.nearbyOutlet2ID});
+  var nearbyOutlet3 = _.find(allOutletsArray, {outletID: transit.nearbyOutlet3ID});
+  var nearbyOutlet4 = _.find(allOutletsArray, {outletID: transit.nearbyOutlet4ID});
+
+  // Calculate nearbyOutletName
+  var nearbyOutlet ={},direction="";
+  if (outlet.pointerValue > 0) {
+    // on the side of nearbyOutlet1ID and nearbyOutlet4ID
+    //if(distanceToOutlet1 == distanceToOutlet2){  //TODO: check
+    nearbyOutlet = ( isShorterDistanceToOutlet(nearbyOutlet1, nearbyOutlet4, outlet)  ) ? (nearbyOutlet1) : (nearbyOutlet4);
+    if(isInBetweenOutlets(nearbyOutlet1,nearbyOutlet4,outlet)){
+      direction = "straight";
+    }
+    else{
+      direction= getDirectionToTransitAfterExitFromOutlet(nearbyOutlet,outlet);
+    }
+  } else {
+    // on the side of nearbyOutlet2ID and nearbyOutlet3ID
+    //if(distanceToOutlet1 == distanceToOutlet2){  //TODO: check
+    nearbyOutlet = ( isShorterDistanceToOutlet(nearbyOutlet2, nearbyOutlet3, outlet)  ) ? (nearbyOutlet2) : (nearbyOutlet3);
+    if(isInBetweenOutlets(nearbyOutlet2,nearbyOutlet3,outlet)){
+      direction = "straight";
+    }
+    else{
+      direction= getDirectionToTransitAfterExitFromOutlet(nearbyOutlet,outlet);
+    }
+  }
+
+
+
+  // Create response object
+  var response={};
+  response.direction = direction;
+  response.nearbyOutletName = nearbyOutlet.outletName;
+
+  return response;
+}
+
 function calculateLeftRightClosestBridge(sourcePointer, pointer1, pointer2, pointer3, pointer4, bridgesArrayObject,outletArray,clBridgeOnLeft) {
   var closestBridgeOnLeft = clBridgeOnLeft;
   var closestBridgeOnRight = clBridgeOnLeft;
@@ -90,39 +133,6 @@ function findTheClosestBridge(bridgesArray, sourcePointer, destinationPointer, o
       var clpointer3 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnLeft.nearbyOutlet3ID})].pointerValue;
       var clpointer4 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnLeft.nearbyOutlet4ID})].pointerValue;
 
-      /*var crpointer1 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnRight.nearbyOutlet1ID})].pointerValue;
-       var crpointer2 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnRight.nearbyOutlet2ID})].pointerValue;
-       var crpointer3 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnRight.nearbyOutlet3ID})].pointerValue;
-       var crpointer4 = outletArray[_.findIndex(outletArray, {outletID: closestBridgeOnRight.nearbyOutlet4ID})].pointerValue;*/
-
-      /*if ((Math.abs(pointer2) >= Math.abs(sourcePointer) && Math.abs(pointer3) <= Math.abs(sourcePointer)) || (Math.abs(pointer1) >= Math.abs(sourcePointer) && Math.abs(pointer4) <= Math.abs(sourcePointer))) {// the outlet is in front of a bridge
-       return bridgesArray[x];
-       }
-
-       if (sourcePointer < 0) {
-       if (pointer3 < sourcePointer) {
-       if (Math.abs(clpointer3) - Math.abs(sourcePointer) > Math.abs(pointer3) - Math.abs(sourcePointer)) {
-       closestBridgeOnLeft = bridgesArray[x];
-       }
-       }
-       if (pointer2 > sourcePointer) {
-       if (Math.abs(clpointer2) - Math.abs(sourcePointer) > Math.abs(pointer2) - Math.abs(sourcePointer)) {
-       closestBridgeOnRight = bridgesArray[x];
-       }
-       }
-       }
-       else {
-       if (pointer1 < sourcePointer) {
-       if (Math.abs(clpointer1) - Math.abs(sourcePointer) > Math.abs(pointer1) - Math.abs(sourcePointer)) {
-       closestBridgeOnLeft = bridgesArray[x];
-       }
-       }
-       if (pointer4 > sourcePointer) {
-       if (Math.abs(clpointer4) - Math.abs(sourcePointer) > Math.abs(pointer4) - Math.abs(sourcePointer)) {
-       closestBridgeOnRight = bridgesArray[x];
-       }
-       }
-       }*/
       //console.log("calculate left right method base");
       resp = calculateLeftRightClosestBridge(sourcePointer,pointer1,pointer2,pointer3,pointer4,bridgesArray[x],outletArray,closestBridgeOnLeft);
     }
@@ -151,7 +161,7 @@ function findTheClosestBridge(bridgesArray, sourcePointer, destinationPointer, o
   }
   //if there are no bridges and only escalators
   if(bridgesArray == null ||bridgesArray.length == 0) {
-  concole.log("there are no bridges and only escalators");
+    console.log("there are no bridges and only escalators");
     var fromIndex = _.findIndex(outletArray, {pointerValue: sourcePointer});
     var floor1 = outletArray[fromIndex].floorNumber;
     var zone1 = outletArray[fromIndex].floorZoneID;
@@ -190,31 +200,86 @@ function getMeaningfulObjectFromOutlet(outletObject) {
   return returnObject;
 }
 
-function isShorterDistanceToOutlet(outlet1, outlet2, destOutlet) {
-  outlet1 = getMeaningfulObjectFromOutlet(outlet1),
+function isShorterDistanceToOutlet(outlet1, outlet2, outlet) {
+  var outlet1 = getMeaningfulObjectFromOutlet(outlet1),
     outlet2 = getMeaningfulObjectFromOutlet(outlet2),
-    destOutlet = getMeaningfulObjectFromOutlet(destOutlet);
+    outlet = getMeaningfulObjectFromOutlet(outlet);
 
   //TODO : improve this algorithm with more information , currently uses only pointer
 
-  var distanceToOutlet1 = Math.abs(outlet1.pointer - destOutlet.pointer);
-  var distanceToOutlet2 = Math.abs(outlet2.pointer - destOutlet.pointer);
+  var distanceToOutlet1 = Math.abs(outlet1.pointer - outlet.pointer);
+  var distanceToOutlet2 = Math.abs(outlet2.pointer - outlet.pointer);
   var isShorter = (distanceToOutlet1 <= distanceToOutlet2);
+  return isShorter;
 }
 
+function isInBetweenOutlets(outlet1,outlet2,outlet){
+  var outlet1 = getMeaningfulObjectFromOutlet(outlet1),
+    outlet2 = getMeaningfulObjectFromOutlet(outlet2),
+    outlet = getMeaningfulObjectFromOutlet(outlet);
+
+  // If outlet is in between the nearbyOutlets, then transit is straight ahead.
+  if(outlet1.pointer >= outlet.pointer && outlet2.pointer<=outlet.pointer ){
+    return true;
+  }
+  else if(outlet1.pointer <= outlet.pointer && outlet2.pointer>=outlet.pointer ) {
+    return true;
+  }
+  return false;
+}
+
+function getDirectionToTransitAfterExitFromOutlet(nearbyOutlet, outlet) {
+  // Result Options : [ "left", "right" ]
+  var nearbyOutlet = getMeaningfulObjectFromOutlet(nearbyOutlet),
+  outlet = getMeaningfulObjectFromOutlet(outlet);
+
+
+  if( outlet.pointer < nearbyOutlet.pointer ){
+    return "right";
+  }
+  else if(outlet.pointer > nearbyOutlet.pointer ){
+    return "left";
+  }
+
+  // Invalid case . Should call isInBetweenOutlets first.
+  return "straight";
+
+}
+
+function getDirectionFromTransitToOutlet(nearbyOutlet, outlet) {
+  // Result Options : [ "left", "right" ]
+  var nearbyOutlet = getMeaningfulObjectFromOutlet(nearbyOutlet),
+    outlet = getMeaningfulObjectFromOutlet(outlet);
+
+
+  if( outlet.pointer < nearbyOutlet.pointer ){
+    return "left";
+  }
+  else if(outlet.pointer > nearbyOutlet.pointer ){
+    return "right";
+  }
+
+  // Invalid case . Should call isInBetweenOutlets first.
+  return "straight";
+
+}
+
+
+
 function getDifferentFloorTemplateUsingValues(fromOutletname,
-                                              firstDirection,
+                                              srcDirection,
                                               outletNameNearEscalator,
                                               escalatorUpwardsOrDownwards,
                                               escalatorFloorCount,
                                               viaOutletName,
-                                              toOutletName) {
+                                              toOutletName,
+                                              destDirection) {
   return [
-    'Exit "' + fromOutletname + '" and take a ' + firstDirection + '.',
+    'Exit "' + fromOutletname + '" and take a ' + srcDirection + '.',
     'Reach the escalator near ' + outletNameNearEscalator + '.',
     'Take the escalator ' + escalatorUpwardsOrDownwards + ' by ' + escalatorFloorCount + ' floor.',
     'Take the path via ' + viaOutletName + '.',
-    'Your destination : ' + toOutletName + ' would be on your ' + firstDirection + '.'
+    'Your destination : ' + toOutletName + ' would be on your ' + destDirection + '.'
   ];
 
 }
@@ -317,46 +382,38 @@ module.exports = {
         // All values are available here. Rename properly for easier use
         var fromIndex = _.findIndex(outletArray, {outletID: fromOutletID});
         var toIndex = _.findIndex(outletArray, {outletID: toOutletID});
+        var outlet1 = _.find(outletArray,{outletID:fromOutletID});
+        var outlet2 = _.find(outletArray,{outletID:toOutletID});
 
-        var floor1 = outletArray[fromIndex].floorNumber,
-          floor2 = outletArray[toIndex].floorNumber,
-          zone1 = outletArray[fromIndex].floorZoneID,
-          zone2 = outletArray[toIndex].floorZoneID,
-          pointer1 = outletArray[fromIndex].pointerValue,
-          pointer2 = outletArray[toIndex].pointerValue,
-          name1 = outletArray[fromIndex].outletName,
-          name2 = outletArray[toIndex].outletName
+        var floor1 = outlet1.floorNumber,
+          floor2 = outlet2.floorNumber,
+          zone1 = outlet1.floorZoneID,
+          zone2 = outlet2.floorZoneID,
+          pointer1 = outlet1.pointerValue,
+          pointer2 = outlet2.pointerValue,
+          name1 = outlet1.outletName,
+          name2 = outlet2.outletName
           ;
-
 
         // 1. Find out which template to use
         if (floor1 != floor2) {
-          // use different floor template
-
-          // find exitDirection from outlet1
-          var dir1 = outletArray[fromIndex].turnDirectionToZoneEscalator;
-          //console.log("dir1:" + dir1);
-          //calculating directions
-
+          // use different floor template = [ name1 , dir1, esc1nearbyOutletName , isGoingUp, diff, esc2nearbyOutletName, name2, dir2]
 
           // find isGoingUp  and floorDiff
           var diff = Math.abs(floor2 - floor1);
           var isGoingUp = (floor1 < floor2) ? "up" : "down";
-          console.log("diff:" + diff + " and isGoingUp:" + isGoingUp);
-          console.log("1 more");
-          // Find which escalator to use on floor1
-          var esc1 = getEscalatorIdUsingFromOutletID(hubTransitArray, floor1, zone1, pointer1);
 
-          console.log("Escalator 1:" + JSON.stringify(esc1));
-          var esc1nearbyOutletName = _.find(allOutletsArray, {outletID: esc1.nearbyOutlet1ID}).outletName;
+          // Find the escalator on the same zone
+          var esc1 = getEscalatorIdUsingFromOutletID(hubTransitArray, floor1, zone1, pointer1);
           var escName1 = esc1.escalatorName;
 
+          // Find esc2 - the esc entity for the same escalator but for the destination floor.
           var esc2 = _.find(hubTransitArray, {escalatorName: escName1, floorID: floor2});
 
           var response;
 
           if(esc2 != undefined || esc2 != null) {
-          //the selected escalator goes to the destination floor
+            //the selected escalator goes to the destination floor
             console.log("Escalator 2:" + JSON.stringify(esc2));
             response = findTheClosestBridge(hubTransitArray, pointer1, pointer2,allOutletsArray,hubTransitArray);
           }
@@ -394,19 +451,24 @@ module.exports = {
           if (pointer2 > 0) {
             // on the side of nearbyOutlet1ID and nearbyOutlet2ID
             //if(distanceToOutlet1 == distanceToOutlet2){  //TODO: check
-            viaOutletName = ( isShorterDistanceToOutlet(nearbyOutlet1, nearbyOutlet2, outletArray[toIndex])  ) ? (nearbyOutlet1.outletName) : (nearbyOutlet2.outletName);
+            var b = isShorterDistanceToOutlet(nearbyOutlet1, nearbyOutlet4, outletArray[toIndex]);
+            viaOutletName = ( isShorterDistanceToOutlet(nearbyOutlet1, nearbyOutlet4, outletArray[toIndex])  ) ? (nearbyOutlet1.outletName) : (nearbyOutlet4.outletName);
 
           } else {
             // on the side of nearbyOutlet3ID and nearbyOutlet4ID
             //if(distanceToOutlet1 == distanceToOutlet2){  //TODO: check
-            viaOutletName = ( isShorterDistanceToOutlet(nearbyOutlet3, nearbyOutlet4, outletArray[toIndex])  ) ? (nearbyOutlet3.outletName) : (nearbyOutlet4.outletName);
+            viaOutletName = ( isShorterDistanceToOutlet(nearbyOutlet2, nearbyOutlet3, outletArray[toIndex])  ) ? (nearbyOutlet2.outletName) : (nearbyOutlet3.outletName);
           }
 
 
           console.log("response of closest bridge - "+JSON.stringify(response));
-          closestBridge = response.closestExit;
+          var closestEscalator = response.closestExit;
           var exitDir = response.sourceExitDir;
-          console.log("1 id - "+closestBridge.nearbyOutlet1ID);
+          //console.log("1 id - "+closestBridge.nearbyOutlet1ID);
+
+          // find the esc1nearbyOutletName from closestEscalator
+          var transit1details = getDirectionToTransitAndNearbyOutletName(allOutletsArray,hubTransitArray,outlet1,closestEscalator);
+          var esc1nearbyOutletName =transit1details.nearbyOutletName;
 
           var returnValue = getDifferentFloorTemplateUsingValues(
             name1, exitDir, esc1nearbyOutletName, isGoingUp, diff, viaOutletName, name2);
