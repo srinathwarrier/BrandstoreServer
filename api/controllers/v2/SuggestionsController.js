@@ -40,7 +40,7 @@ module.exports = {
 
 
     Outlet
-      .find({select: ['outletID', 'outletName','active']})
+      .find({select: ['outletID', 'outletName','active','floorNumber']})
       .where({outletName: {contains: param}})
       //.where({active: true})
       .sort('outletName')
