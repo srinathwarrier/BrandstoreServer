@@ -80,7 +80,7 @@ module.exports = {
       .spread(function (userInteractionArray,tagArray,outletArray) {
         // Calculate final array and return
         // combine tagArray and outletArray. _.sortBy( createdDate)
-        var resultArray = _.sortBy(tagArray.concat(outletArray),'createdDate','desc');
+        var resultArray = _.sortBy(tagArray.concat(outletArray),'createdDate').reverse();
         res.json(resultArray);
       })
       .catch(function (err) {
