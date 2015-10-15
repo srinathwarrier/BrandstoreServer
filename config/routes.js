@@ -59,7 +59,7 @@ module.exports.routes = {
 
 
   /* Search Suggestions Routes */
-  //'get /v2/getRecentAndPopularSuggestions':'V2Controller.getRecentAndPopularSuggestions',
+  'get /v2/getRecentAndPopularSuggestions':'v2/SuggestionsController.getRecentAndPopularSuggestions',
   'get /v2/getSuggestions':'v2/SuggestionsController.getSuggestions',
 
   /* Outlet list Routes */

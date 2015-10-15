@@ -11,7 +11,100 @@ module.exports = {
     var userId = req.query.userid;
     if (userId == undefined) userId = 6;
 
-    res.json();
+    /*
+     SELECT distinct x.tagName FROM (SELECT t.tagName
+     FROM  `UserInteraction` AS ui
+     INNER JOIN  `Tag` AS t ON ui.userInteractionLog = t.tagID
+     WHERE ui.userInteractionTypeID =5
+     AND ui.userID = 6
+     AND ui.userInteractionLog NOT LIKE  '%,%'
+     AND t.active =1
+     ORDER BY ui.createdDate DESC ) AS x
+     LIMIT 0 , 3;
+     */
+    UserInteraction
+      .find({select:['userInteractionLog','createdDate','userInteractionTypeID']})
+      .where({userID:userId,userInteractionTypeID:[5,7]})
+      .sort('createdDate DESC')
+      .then(function(userInteractionArray){
+        // for UserInteractionTypeID = 5, fetch tagName
+        var tagObjectArray = _.where(userInteractionArray,{'userInteractionTypeID':5});
+        var uniqueTagObjectArray = _.uniq(tagObjectArray,'userInteractionLog');
+        var slicedUniqueTagObjectArray = uniqueTagObjectArray.slice(0,10);
+        var slicedUniqueTagIdArray = _.pluck(slicedUniqueTagObjectArray,'userInteractionLog');
+
+        var sortedTagArray = Tag
+          .find({select:['tagID','tagName']})
+          .where({tagID:slicedUniqueTagIdArray,active:true})
+          .then(function(tagArray){
+            //sort tagArray based on userInteractionArray[i].createdDate
+            var sortedTagArray = _.sortBy(tagArray,function(obj){
+              obj.type="category";
+              obj.name = obj.tagName;
+              obj.Id = obj.tagID;
+              obj.createdDate = new Date(_.result(_.find(slicedUniqueTagObjectArray,{'userInteractionLog':obj.tagID+""}),'createdDate'));
+              var returnValue = _.indexOf(slicedUniqueTagIdArray,obj.tagID+"");
+              delete obj.tagID;
+              delete obj.tagName;
+              return returnValue;
+            });
+            return sortedTagArray;
+          });
+
+        // for UserInteractionTypeID = 7, fetch outletName
+        var outletObjectArray = _.where(userInteractionArray,{'userInteractionTypeID':7});
+        var uniqueOutletObjectArray = _.uniq(outletObjectArray,'userInteractionLog');
+        var slicedUniqueOutletObjectArray = uniqueOutletObjectArray.slice(0,10);
+        var slicedUniqueOutletIdArray = _.pluck(slicedUniqueOutletObjectArray,'userInteractionLog');
+
+        var sortedOutletArray = Outlet
+          .find({select:['outletID','outletName']})
+          .where({outletID:slicedUniqueOutletIdArray,active:true})
+          .then(function (outletArray) {
+            // sort and return
+            var sortedOutletArray = _.sortBy(outletArray, function (obj) {
+              obj.type="outlet";
+              obj.name = obj.outletName;
+              obj.Id = obj.outletID;
+              obj.createdDate = new Date(_.result(_.find(slicedUniqueOutletObjectArray,{'userInteractionLog':obj.outletID+""}),'createdDate'));
+              var returnValue = _.indexOf(slicedUniqueOutletIdArray,obj.outletID+"");
+              delete obj.outletName;
+              delete obj.outletID;
+              return returnValue;
+            });
+            return sortedOutletArray;
+          });
+
+        return [userInteractionArray,sortedTagArray,sortedOutletArray];
+      })
+      .spread(function (userInteractionArray,tagArray,outletArray) {
+        // Calculate final array and return
+        // combine tagArray and outletArray. _.sortBy( createdDate)
+        var resultArray = _.sortBy(tagArray.concat(outletArray),'createdDate','desc');
+        res.json(resultArray);
+      })
+      .catch(function (err) {
+        if (err) {
+          return res.serverError(err);
+        }
+      });
+
+
+    /*
+
+     SELECT ui.userID, COUNT(userInteractionLog) , t.tagName
+     FROM  `UserInteraction` AS ui
+     INNER JOIN `Tag` as t ON ui.userInteractionLog = t.tagID
+     WHERE ui.userInteractionTypeID =5
+     AND ui.userID = userId
+     AND ui.userInteractionLog NOT LIKE  '%,%'
+     GROUP BY userInteractionLog
+     ORDER BY COUNT(userInteractionLog)  DESC
+     LIMIT 0 , 10;
+
+
+     */
+
 
 
   },
