@@ -83,6 +83,39 @@ module.exports = {
     collectionAssignment:{
       collection:'CollectionOutletAssignment',
       via:'outletID'
+    },
+    staticAveragePrices:{
+      collection:'StaticAveragePrices',
+      via:'outletID'
+    },
+    findOtherOutletsInCollection:function(opts,cb){
+      CollectionOutletAssignment.find({collectionID:opts.collectionID}).exec(function(err,outlets){
+          if(err) return cb(err);
+          if(!outlets) return cb(new Error('outlets not found'));
+          var outletIdArray = _.pluck(outlets,'outletID');
+          Outlet
+            .find({outletID:outletIdArray})
+            .populateAll()
+            .exec(function (err2,outletDetails) {
+              if(err2) return cb(err2);
+              if(!outletDetails) return cb(new Error('outlet details not found'));
+              var resultArray=[];
+              for(var index in outletDetails){
+                var outletID = outletDetails[index].outletID;
+                var imageUrl = outletDetails[index].ownedByBrandID.imageUrl;
+                var outletName = outletDetails[index].outletName;
+                var brandName = outletDetails[index].brandName;
+                var obj={
+                  outletID:outletID,
+                  imageUrl:imageUrl,
+                  outletName :outletName,
+                  brandName :brandName
+                };
+                resultArray.push(obj);
+              }
+              return cb(resultArray);
+            });
+        });
     }
   }
 };

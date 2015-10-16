@@ -13,13 +13,17 @@ module.exports = {
   autoPK: false,
   "attributes": {
     tempid:{
-      type:"integer"
+      type:"integer",
+      unique: true,
+      primaryKey: true,
+      autoIncrement: true
     },
     brandID: {
       type: "integer"
     },
     outletID:{
-      type:"integer"
+      type:"integer",
+      model:'Outlet'
     },
     isManual:{
       type:"boolean"
