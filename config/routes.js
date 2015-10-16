@@ -76,7 +76,7 @@ module.exports.routes = {
 
   /* TMT Routes */
   'get /v2/getTakeMeThereCommands' :'v2/TakeMeThereController.getTakeMeThereCommands',
-  'get /v2/getTakeMeThereCommandsForCategory' :'v2/TakeMeThereController.getTakeMeThereCommandsForCategory',
+  //'get /v2/getTakeMeThereCommandsForCategory' :'v2/TakeMeThereController.getTakeMeThereCommandsForCategory',
 
 
   /* GCM Routes */

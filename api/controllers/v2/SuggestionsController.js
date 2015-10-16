@@ -2,6 +2,46 @@
  * Created by I076324 on 9/23/2015.
  */
 
+function getSortedTagArray(slicedUniqueTagIdArray,slicedUniqueTagObjectArray){
+  return Tag
+    .find({select:['tagID','tagName']})
+    .where({tagID:slicedUniqueTagIdArray,active:true})
+    .then(function(tagArray){
+      //sort tagArray based on userInteractionArray[i].createdDate
+      var sortedTagArray = _.sortBy(tagArray,function(obj){
+        obj.type="category";
+        obj.name = obj.tagName;
+        obj.Id = obj.tagID;
+        obj.createdDate = new Date(_.result(_.find(slicedUniqueTagObjectArray,{'userInteractionLog':obj.tagID+""}),'createdDate'));
+        var returnValue = _.indexOf(slicedUniqueTagIdArray,obj.tagID+"");
+        delete obj.tagID;
+        delete obj.tagName;
+        return returnValue;
+      });
+      return sortedTagArray;
+    });
+}
+
+function getSortedOutletArray(slicedUniqueOutletIdArray ,slicedUniqueOutletObjectArray ){
+  return Outlet
+    .find({select:['outletID','outletName']})
+    .where({outletID:slicedUniqueOutletIdArray,active:true})
+    .then(function (outletArray) {
+      // sort and return
+      var sortedOutletArray = _.sortBy(outletArray, function (obj) {
+        obj.type="outlet";
+        obj.name = obj.outletName;
+        obj.Id = obj.outletID;
+        obj.createdDate = new Date(_.result(_.find(slicedUniqueOutletObjectArray,{'userInteractionLog':obj.outletID+""}),'createdDate'));
+        var returnValue = _.indexOf(slicedUniqueOutletIdArray,obj.outletID+"");
+        delete obj.outletName;
+        delete obj.outletID;
+        return returnValue;
+      });
+      return sortedOutletArray;
+    });
+}
+
 
 module.exports = {
 
@@ -23,64 +63,50 @@ module.exports = {
      LIMIT 0 , 3;
      */
     UserInteraction
-      .find({select:['userInteractionLog','createdDate','userInteractionTypeID']})
-      .where({userID:userId,userInteractionTypeID:[5,7]})
+      .find({select:['userInteractionLog','createdDate','userInteractionTypeID','userID']})
+      .where({userInteractionTypeID:[5,7]})
       .sort('createdDate DESC')
       .then(function(userInteractionArray){
-        // for UserInteractionTypeID = 5, fetch tagName
-        var tagObjectArray = _.where(userInteractionArray,{'userInteractionTypeID':5});
+        // for Recent tags, i.e. UserInteractionTypeID = 5, fetch tagName
+        var tagObjectArray = _.where(userInteractionArray,{'userID':parseInt(userId),'userInteractionTypeID':5});
         var uniqueTagObjectArray = _.uniq(tagObjectArray,'userInteractionLog');
         var slicedUniqueTagObjectArray = uniqueTagObjectArray.slice(0,10);
         var slicedUniqueTagIdArray = _.pluck(slicedUniqueTagObjectArray,'userInteractionLog');
+        var sortedRecentTagArray = getSortedTagArray(slicedUniqueTagIdArray,slicedUniqueTagObjectArray);
 
-        var sortedTagArray = Tag
-          .find({select:['tagID','tagName']})
-          .where({tagID:slicedUniqueTagIdArray,active:true})
-          .then(function(tagArray){
-            //sort tagArray based on userInteractionArray[i].createdDate
-            var sortedTagArray = _.sortBy(tagArray,function(obj){
-              obj.type="category";
-              obj.name = obj.tagName;
-              obj.Id = obj.tagID;
-              obj.createdDate = new Date(_.result(_.find(slicedUniqueTagObjectArray,{'userInteractionLog':obj.tagID+""}),'createdDate'));
-              var returnValue = _.indexOf(slicedUniqueTagIdArray,obj.tagID+"");
-              delete obj.tagID;
-              delete obj.tagName;
-              return returnValue;
-            });
-            return sortedTagArray;
-          });
-
-        // for UserInteractionTypeID = 7, fetch outletName
-        var outletObjectArray = _.where(userInteractionArray,{'userInteractionTypeID':7});
+        // for Recent outlets, i.e UserInteractionTypeID = 7, fetch outletName
+        var outletObjectArray = _.where(userInteractionArray,{'userID':parseInt(userId),'userInteractionTypeID':7});
         var uniqueOutletObjectArray = _.uniq(outletObjectArray,'userInteractionLog');
         var slicedUniqueOutletObjectArray = uniqueOutletObjectArray.slice(0,10);
         var slicedUniqueOutletIdArray = _.pluck(slicedUniqueOutletObjectArray,'userInteractionLog');
+        var sortedRecentOutletArray = getSortedOutletArray(slicedUniqueOutletIdArray,slicedUniqueOutletObjectArray);
 
-        var sortedOutletArray = Outlet
-          .find({select:['outletID','outletName']})
-          .where({outletID:slicedUniqueOutletIdArray,active:true})
-          .then(function (outletArray) {
-            // sort and return
-            var sortedOutletArray = _.sortBy(outletArray, function (obj) {
-              obj.type="outlet";
-              obj.name = obj.outletName;
-              obj.Id = obj.outletID;
-              obj.createdDate = new Date(_.result(_.find(slicedUniqueOutletObjectArray,{'userInteractionLog':obj.outletID+""}),'createdDate'));
-              var returnValue = _.indexOf(slicedUniqueOutletIdArray,obj.outletID+"");
-              delete obj.outletName;
-              delete obj.outletID;
-              return returnValue;
-            });
-            return sortedOutletArray;
-          });
+        /*
+        // for Popular tags
+        var popularTagObjectArray = _.where(userInteractionArray,{'userInteractionTypeID':5});
+        // Find tags which have max occurrence in array
+        // get object for those tags
 
-        return [userInteractionArray,sortedTagArray,sortedOutletArray];
+        var countObject = _.countBy(popularTagObjectArray,function(obj){ return obj.userInteractionLog; });
+        var a = _.sortBy(popularTagObjectArray,function(obj){
+          var i = countObject[obj.userInteractionLog+""];
+          return i;
+        });
+
+
+        var uniquePopularTagObjectArray = _.uniq(popularTagObjectArray,'userInteractionLog');
+        var slicedUniquePopularTagObjectArray = uniquePopularTagObjectArray.slice(0,10);
+        var slicedUniquePopularTagIdArray = _.pluck(slicedUniquePopularTagObjectArray,'userInteractionLog');
+        var sortedPopularTagArray = getSortedTagArray(slicedUniquePopularTagIdArray ,slicedUniquePopularTagObjectArray);
+        */
+
+
+        return [userInteractionArray,sortedRecentTagArray,sortedRecentOutletArray/*,sortedPopularTagArray,sortedPopularOutletArray*/];
       })
-      .spread(function (userInteractionArray,tagArray,outletArray) {
+      .spread(function (userInteractionArray,recentTagArray,recentOutletArray/*,popularTagArray,popularOutletArray*/) {
         // Calculate final array and return
         // combine tagArray and outletArray. _.sortBy( createdDate)
-        var resultArray = _.sortBy(tagArray.concat(outletArray),'createdDate').reverse();
+        var resultArray = _.sortBy(recentTagArray.concat(recentOutletArray),'createdDate').reverse();
         res.json(resultArray);
       })
       .catch(function (err) {
