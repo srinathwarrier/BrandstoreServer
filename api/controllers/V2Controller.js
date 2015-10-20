@@ -77,5 +77,28 @@ module.exports = {
 
 
       });
+  },
+
+  fillLeftOutletId : function (req,res,connection) {
+    var id = req.query.id;
+    var leftId = req.query.leftid;
+    var updatedArray = [];
+    Outlet.find().exec(function (err,outletArray) {
+      var a = outletArray;
+      var outletIdArray = _.pluck(outletArray,'outletID');
+      // find leftOutletIdArray
+
+      /*for(var i=0;i<outletIdArray.length;i++){
+        Outlet.update({outletID:outletIdArray[i]},{leftOutletID:leftOutletIdArray[i]}).exec(function (err,updated) {
+          if(err){res.json(err);return;}
+          updatedArray.push(updated);
+        });
+      }*/
+
+      Outlet.update({outletID:id},{leftOutletID:leftId}).exec(function (err,updated) {
+        if(err){res.json(err);return;}
+        updatedArray.push(updated);
+      });
+    });
   }
 };

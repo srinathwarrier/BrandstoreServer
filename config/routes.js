@@ -91,7 +91,8 @@ module.exports.routes = {
   'get /v2/externalAccountLoginOrSignUp' : 'v2/AuthController.externalAccountLoginOrSignUp',
 
   /* test */
-  'get /testSAP':"V2Controller.fillAllOutletIDsInStaticAvgPrices"
+  'get /testSAP':"V2Controller.fillAllOutletIDsInStaticAvgPrices",
+  'get /fillLeftOutletId' : "V2Controller.fillLeftOutletId"
 
 
 
