@@ -80,25 +80,49 @@ module.exports = {
   },
 
   fillLeftOutletId : function (req,res,connection) {
-    var id = req.query.id;
-    var leftId = req.query.leftid;
     var updatedArray = [];
     Outlet.find().exec(function (err,outletArray) {
       var a = outletArray;
-      var outletIdArray = _.pluck(outletArray,'outletID');
-      // find leftOutletIdArray
+      //var outletIdArray = _.pluck(outletArray,'outletID');
+      var outletId,leftId,rightId;
 
-      /*for(var i=0;i<outletIdArray.length;i++){
-        Outlet.update({outletID:outletIdArray[i]},{leftOutletID:leftOutletIdArray[i]}).exec(function (err,updated) {
+      for(var i=0;i<outletArray.length;i++){
+        outletId = outletArray[i].outletID;
+        leftIdObj = _.find(outletArray,
+          {
+            floorNumber:outletArray[i].floorNumber,
+            pointerValue : ( outletArray[i].pointerValue > 0 ? outletArray[i].pointerValue-1 : outletArray[i].pointerValue + 1)
+          });
+        if(leftIdObj!=undefined){
+          leftId = leftIdObj.outletID;
+        }
+        if(leftId == undefined){
+          leftId ="";
+        }
+
+        rightIdObj = _.find(outletArray,
+          {
+            floorNumber:outletArray[i].floorNumber,
+            pointerValue : ( outletArray[i].pointerValue > 0 ? outletArray[i].pointerValue +1 : outletArray[i].pointerValue - 1)
+          });
+        if(rightIdObj!=undefined){
+          rightId= rightIdObj.outletID;
+        }
+        if(rightId == undefined){
+          rightId ="";
+        }
+
+        Outlet.update({outletID:outletId},{leftOutletID:leftId , rightOutletID:rightId}).exec(function (err,updated) {
           if(err){res.json(err);return;}
           updatedArray.push(updated);
         });
-      }*/
 
-      Outlet.update({outletID:id},{leftOutletID:leftId}).exec(function (err,updated) {
-        if(err){res.json(err);return;}
-        updatedArray.push(updated);
-      });
+      }
+
+
     });
   }
+
+
+
 };

@@ -44,6 +44,12 @@ module.exports = {
     pointerValue :{
       type : 'integer'
     },
+    leftOutletID:{
+      type:'integer'
+    },
+    rightOutletID:{
+      type:'integer'
+    },
     turnDirectionToZoneEscalator:{
       type:'string',
       size:10

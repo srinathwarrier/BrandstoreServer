@@ -95,8 +95,4 @@ module.exports.routes = {
   'get /fillLeftOutletId' : "V2Controller.fillLeftOutletId"
 
 
-
-
-
-
 };
