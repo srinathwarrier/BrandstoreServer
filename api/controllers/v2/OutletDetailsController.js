@@ -3,6 +3,28 @@
  */
 
 
+function getFloorNameFromFloorNumber(index) {
+  var returnValue = "";
+  switch (index) {
+    case -1:
+      returnValue = "Lower ground floor";
+      break;
+    case 0:
+      returnValue = "Ground floor";
+      break;
+    case 1:
+      returnValue = "First floor";
+      break;
+    case 2:
+      returnValue = "Second floor";
+      break;
+    default :
+      returnValue = "";
+      break;
+  }
+  return returnValue;
+}
+
 module.exports = {
 
   getOutletDetails: function (req, res, connection) {
@@ -76,158 +98,58 @@ module.exports = {
     var id = req.query.id;
     var userId = req.query.userid;
     if (userId == undefined) userId = 6;
-    var callProcedureString = "CALL `getOutletDetailsForOutletID` ( '" + userId + "' , '" + id + "' );";
-    //var callFavoritesStrings = "CALL"
-    Brand.query(callProcedureString, function (err, rows, fields) {
-      if (!err) {
-        console.log("rows:" + rows);
-        var resultObj = rows[0][0];
-        console.log("resultObj:" + JSON.stringify(resultObj));
-        if (resultObj != undefined && resultObj) {
-          switch (resultObj.floorNumber + "") {
-            case '-1':
-              resultObj.floorNumber = "Lower Ground Floor";
-              break;
-            case '0':
-              resultObj.floorNumber = "Ground Floor";
-              break;
-            case '1':
-              resultObj.floorNumber = "First Floor";
-              break;
-            case '2':
-              resultObj.floorNumber = "Second Floor";
-              break;
-            default:
-              break;
-          }
-        }
 
-        if (resultObj != undefined && resultObj) {
+    CollectionOutletAssignment
+      .find()
+      .then(function ( collectionOutletAssignmentArray) {
 
-          if (rows[1] != undefined) {
-            resultObj.tagsArray = rows[1];
-          }
-          if (rows[2] != undefined) {
-            resultObj.relatedBrandsArray = rows[2];
-          }
-          if (rows[3] != undefined) {
-            resultObj.offersArray = rows[3];
-          }
-          if (rows[4] != undefined) {
-            resultObj.outletDetails = rows[4];
-          }
-
-
-        }
-        else {
-          resultObj = {};
-          resultObj = rows[4][0];
-          resultObj.genderCodeString = "";
-
-          resultObj.tagsArray = [];
-          resultObj.relatedBrandsArray = [];
-          resultObj.offersArray = [];
-          console.log("getOutletDetails : floorNumber " + resultObj.floorNumber);
-          switch (resultObj.floorNumber + "") {
-            case '-1':
-              resultObj.floorNumber = "Lower Ground Floor";
-              break;
-            case '0':
-              resultObj.floorNumber = "Ground Floor";
-              break;
-            case '1':
-              resultObj.floorNumber = "First Floor";
-              break;
-            case '2':
-              resultObj.floorNumber = "Second Floor";
-              break;
-            default:
-              break;
-          }
-        }
-        console.log("getOutletDetails test : final " + JSON.stringify(resultObj));
-        UserFavorite
-          .find({select: ['userID', 'outletID']})
-          .where({'userID': userId, 'outletID': id})// amongst these outlets , find the ones selected as Favourite by this user
-          .exec(function (err, userFavoriteArray) {
-            //console.log("getOutletDetails test : final2 "+JSON.stringify(userFavoriteArray));
-            if (userFavoriteArray.length > 0)
-              resultObj.isFavorite = true;
-            else
-              resultObj.isFavorite = false;
-            res.json(resultObj);
-
-          });
-
-
-      }
-      else {
-        console.log('Error while performing Query.' + err);
-        res.setHeader('Content-Type', 'text/html');
-        res.send(err);
-      }
-    });
-
-    Outlet
-      .findOne({outletID:id})
-      .populateAll()
-      .then(function (outletObject) {
-
-        var outletsInCollectionArray= [];
-        var allOutletsInCollectionArray =[];
-        if(outletObject.collectionAssignment){
-          outletsInCollectionArray = Collection
-            .find({collectionID:outletObject.collectionAssignment[0].collectionID})
+        var otherOutletsInCollectionArray;
+        var collectionOutletAssignmentObject = _.find(collectionOutletAssignmentArray , {outletID : parseInt(id)});
+        var collectionID, otherOutletIdsInCollectionArray ;
+        if(collectionOutletAssignmentObject != undefined) { // this is to check if outlet is present in any collection at all
+          collectionID = collectionOutletAssignmentObject.collectionID;
+          otherOutletIdsInCollectionArray = _.pluck(_.filter(collectionOutletAssignmentArray, {collectionID: collectionID}), 'outletID');
+          otherOutletsInCollectionArray = Outlet
+            .find({outletID :otherOutletIdsInCollectionArray})
             .populateAll()
-            .then(function (collectionObject) {
-              // get outletsArray from collectionObject
-              //var outletsInCollectionArray = _.map(collectionObject.outletAssignment, function(obj) {return _.pick(obj, ["outletID", "outletName"]);});
-              var outletsInCollectionArray = _.pluck(collectionObject.outletAssignment, 'outletID');
-              return outletsInCollectionArray;
-            })
-            .spread(function (outletsInCollectionArray) {
-              return outletsInCollectionArray;
-            });
-
-          allOutletsInCollectionArray = CollectionOutletAssignment
-            .find({collectionID:outletObject.collectionAssignment[0].collectionID})
-            .then(function(outlets){
-            if(!outlets) return (new Error('outlets not found'));
-            var outletIdArray = _.pluck(outlets,'outletID');
-            Outlet
-              .find({outletID:outletIdArray})
-              .populateAll()
-              .then(function (outletDetails) {
-                if(!outletDetails) return cb(new Error('outlet details not found'));
-                var resultArray=[];
-                for(var index in outletDetails){
-                  var outletID = outletDetails[index].outletID;
-                  var imageUrl = outletDetails[index].ownedByBrandID.imageUrl;
-                  var outletName = outletDetails[index].outletName;
-                  var brandName = outletDetails[index].brandName;
-                  var obj={
-                    outletID:outletID,
-                    imageUrl:imageUrl,
-                    outletName :outletName,
-                    brandName :brandName
+            .then(function (otherOutetsArray) {
+              var result=[];
+              for(var i=0;i<otherOutetsArray.length;i++){
+                if(otherOutetsArray[i] && otherOutetsArray[i].ownedByBrandID ){
+                  var obj = {
+                    outletID: otherOutetsArray[i].outletID,
+                    outletName : otherOutetsArray[i].outletName,
+                    brandName : otherOutetsArray[i].outletName,
+                    imageUrl : otherOutetsArray[i].ownedByBrandID.imageUrl
                   };
-                  resultArray.push(obj);
+                  result.push(obj);
                 }
-                return (resultArray);
-              });
-          });
+              }
+              return result;
+            });
+        }
+        else{
+          otherOutletsInCollectionArray = [];
         }
 
 
+        var outletObject = Outlet
+          .findOne({outletID:id})
+          .populateAll()
+          .then(function (outletObject) {
+            if(outletObject == undefined){
+              return {};
+            }
+            return outletObject;
+          });
 
-
-        return [outletObject,allOutletsInCollectionArray];
+        return [outletObject,otherOutletsInCollectionArray];
       })
       .spread(function (outletObject,outletsInCollectionArray) {
         var resultObject = {};
         resultObject.outletID = outletObject.outletID;
         resultObject.outletName = outletObject.outletName;
-        resultObject.floorNumber = outletObject.floorNumber;
+        resultObject.floorNumber = getFloorNameFromFloorNumber(outletObject.floorNumber);
         resultObject.ratingValue = outletObject.ratingValue;
         resultObject.phoneNumber = outletObject.phoneNumber;
         resultObject.emailId = outletObject.emailId;
@@ -255,7 +177,7 @@ module.exports = {
 
         resultObject.isFavorite = false;
         if(outletObject.favoritedBy ){
-          if(_.find(outletObject.favoritedBy, {'userID':userId})){
+          if(_.find(outletObject.favoritedBy, {'userID':parseInt(userId)})){
             resultObject.isFavorite = true;
           }
         }
@@ -264,7 +186,7 @@ module.exports = {
 
         var tagsArray=[];
         if(outletObject.staticAveragePrices ) {
-          for (index in outletObject.staticAveragePrices) {
+          for (var index =0; index< outletObject.staticAveragePrices.length;index++) {
             tagsArray.push({
               tagName: outletObject.staticAveragePrices[index].tagName,
               avgPrice: outletObject.staticAveragePrices[index].avgPrice
@@ -275,7 +197,7 @@ module.exports = {
 
         var offersArray=[];
         if(outletObject.offers ) {
-          for (index in outletObject.offers) {
+          for (var index =0;index< outletObject.offers;index++) {
             offersArray.push({
               offerID: outletObject.offers[index].offerID,
               offerDesc: outletObject.offers[index].offerDesc,
@@ -288,11 +210,16 @@ module.exports = {
         }
         resultObject.offersArray= offersArray;
 
+        var relatedBrandsArray = [];
+        if(outletsInCollectionArray !=undefined && outletsInCollectionArray.length>0){
+          relatedBrandsArray = _.filter(outletsInCollectionArray,function(obj){
+            return (obj.outletID!=parseInt(id));
+          });
+        }
+        resultObject.relatedBrandsArray=relatedBrandsArray;
 
 
-
-
-        var test=outletObject;
+        res.json(resultObject);
       })
       .catch(function (err) {
         if (err) {
