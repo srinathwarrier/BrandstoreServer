@@ -50,6 +50,9 @@ module.exports = {
     rightOutletID:{
       type:'integer'
     },
+    isCorner:{
+      type:'boolean'
+    },
     turnDirectionToZoneEscalator:{
       type:'string',
       size:10

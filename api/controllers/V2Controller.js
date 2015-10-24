@@ -121,6 +121,90 @@ module.exports = {
 
 
     });
+  },
+
+  fillPointerValues: function (req,res,connection) {
+
+    /*
+     Cases where Resetting of pointerValue and left+right outletIDs is needed.
+     -> Store closes. No replacement.
+
+     -> Store moves from X to Y.
+
+     -> New store inserted.
+
+     */
+
+    Outlet
+      .find()
+      .exec(function (err,outletArray) {
+        // For -> Floor f
+        var floorArray = _.pluck(_.uniq(outletArray, function (obj) {
+          return obj.floorNumber;
+        }), 'floorNumber');
+        for(var floorIndex = 0;floorIndex < floorArray.length;floorIndex++){
+          // Find corner outletIDs
+          var cornerOutletsArray = _.filter(outletArray,{floorNumber:floorArray[floorIndex] ,isCorner:true});
+          var leftStartOutletID = _.find(cornerOutletsArray, function (obj) {
+            return (obj.pointerValue <0 && obj.rightOutletID==0 )
+          });
+          var leftEndOutletID = _.find(cornerOutletsArray, function (obj) {
+            return (obj.pointerValue <0 && obj.leftOutletID==0 )
+          });
+          var rightStartOutletID = _.find(cornerOutletsArray, function (obj) {
+            return (obj.pointerValue >0 && obj.leftOutletID==0 )
+          });
+          var rightEndOutletID = _.find(cornerOutletsArray, function (obj) {
+            return (obj.pointerValue >0 && obj.rightOutletID==0 )
+          });
+
+          if(leftStartOutletID != undefined && leftEndOutletID != undefined){
+            // For left side
+            var currentOutletId = leftStartOutletID.outletID;
+            var leftPointerValue = -1;
+            do{
+              // Update the pointerValue of outletIdCounter
+              Outlet
+                .update({outletId:currentOutletId},{pointerValue : leftPointerValue})
+                .exec(function(err,updated){
+                  if(err){res.json(err); }
+                });
+
+              // move pointer to next outlet
+              currentOutletId = _.find(outletArray,{outletID:currentOutletId}).leftOutletID;
+
+              // Increment pointer Value (negative)
+              leftPointerValue = leftPointerValue -1;
+
+            }while(currentOutletId != 0);
+          }
+
+          if(rightStartOutletID != undefined && rightEndOutletID != undefined) {
+
+            // For right side
+            currentOutletId = rightStartOutletID.outletID;
+            var rightPointerValue = 1;
+            do{
+              // Update the pointerValue of outletIdCounter
+              Outlet
+                .update({outletId:currentOutletId},{pointerValue : rightPointerValue})
+                .exec(function(err,updated){
+                  if(err){res.json(err); }
+                });
+
+              // move pointer to next outlet
+              currentOutletId = _.find(outletArray,{outletID:currentOutletId}).rightOutletID;
+
+              // Increment pointer Value (negative)
+              rightPointerValue = rightPointerValue +1;
+
+            }while(currentOutletId != 0)
+          }
+
+        }
+
+        res.json(outletArray);
+      })
   }
 
 

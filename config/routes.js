@@ -92,7 +92,8 @@ module.exports.routes = {
 
   /* test */
   'get /testSAP':"V2Controller.fillAllOutletIDsInStaticAvgPrices",
-  'get /fillLeftOutletId' : "V2Controller.fillLeftOutletId"
+  'get /fillLeftOutletId' : "V2Controller.fillLeftOutletId",
+  'get /fillPointerValues':"V2Controller.fillPointerValues"
 
 
 };
