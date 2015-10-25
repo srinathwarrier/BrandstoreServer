@@ -107,7 +107,7 @@ module.exports = {
         // Calculate final array and return
         // combine tagArray and outletArray. _.sortBy( createdDate)
         var resultArray = _.sortBy(recentTagArray.concat(recentOutletArray),'createdDate').reverse();
-        res.json(resultArray);
+        res.json({recent:resultArray});
       })
       .catch(function (err) {
         if (err) {
